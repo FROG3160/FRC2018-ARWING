@@ -28,9 +28,8 @@ class DriveTrain(Subsystem):
 
         # Makes sure both sides' controllers show green and use positive
         # values to move the bot forward.
-        # CURRENTLY DISABLED WHEN USING WITH DifferentialDrive
-        # self.driveLeftSlave.setInverted(False)
-        # self.driveLeftMaster.setInverted(False)
+        self.driveLeftSlave.setInverted(False)
+        self.driveLeftMaster.setInverted(False)
         self.driveRightSlave.setInverted(True)
         self.driveRightMaster.setInverted(True)
 
@@ -53,25 +52,12 @@ class DriveTrain(Subsystem):
             'Right Quad Pos.',
             self.driveRightMaster.getQuadraturePosition())
 
-        # these may give the derivitive an integral of the PID once
-        # they are set.  For now, they just show 0
-        SD.putNumber(
-            'Left Derivative',
-            self.driveLeftMaster.getErrorDerivative(0))
-        SD.putNumber(
-            'Left Integral',
-            self.driveLeftMaster.getIntegralAccumulator(0))
-
         self.leftVel = None
         self.leftPos = None
         self.rightVel = None
         self.rightPos = None
 
         # self.driveLeftMaster.config_kP(0, .3, 10)
-        # kP = self.driveLeftMaster.configGetParameter(
-        #     self.driveLeftMaster.ParamEnum.eProfileParamSlot_P, 0, 10)
-
-        # SmartDashboard.putNumber('Left Proportional', kP)
 
         self.driveControllerLeft = SpeedControllerGroup(self.driveLeftMaster)
         self.driveControllerRight = SpeedControllerGroup(self.driveRightMaster)
@@ -148,3 +134,18 @@ class DriveTrain(Subsystem):
         self.leftPos = leftPos
         self.rightVel = rightVel
         self.rightPos = rightPos
+
+        # kP = self.driveLeftMaster.configGetParameter(
+        #     self.driveLeftMaster.ParamEnum.eProfileParamSlot_P, 0, 10)
+
+        # SmartDashboard.putNumber('Left Proportional', kP)
+
+        # these may give the derivitive an integral of the PID once
+        # they are set.  For now, they just show 0
+        #SD.putNumber(
+        #    'Left Derivative',
+        #    self.driveLeftMaster.getErrorDerivative(0))
+        #SD.putNumber(
+        #    'Left Integral',
+        #    self.driveLeftMaster.getIntegralAccumulator(0))
+
