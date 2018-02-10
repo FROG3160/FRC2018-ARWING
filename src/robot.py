@@ -19,6 +19,9 @@ class Robot(wpilib.IterativeRobot):
         self.drive = Drive()
         self.stick = Joystick(0)
 
+    def robotPeriodic(self):
+        pass
+
     def disabledInit(self):
         pass
 
