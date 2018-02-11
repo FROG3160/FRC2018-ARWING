@@ -46,10 +46,20 @@ class PhysicsEngine(object):
 
         # Simulate the drivetrain
         l_talon = hal_data['CAN'][1]
-        r_talon = hal_data['CAN'][3]
+        r_talon = hal_data['CAN'][2]
 
         speed, rotation = drivetrains.two_motor_drivetrain(
-            l_talon['value'] , r_talon['value'] )
+            l_talon['value'] * -1, r_talon['value'] )
         self.physics_controller.drive(speed, rotation, tm_diff)
 
         # update position (use tm_diff so the rate is constant)
+
+        # encoder increments speed mutiplied by the time by some constant
+        # -> must be an integer
+        lspeed = int(4096*4 * l_talon['value'] * tm_diff)
+        l_talon['quad_position'] += lspeed
+        l_talon['quad_velocity'] = lspeed
+
+        rspeed = int(4096*4 * r_talon['value'] * tm_diff)
+        r_talon['quad_position'] += rspeed
+        r_talon['quad_velocity'] = rspeed
