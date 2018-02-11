@@ -1,10 +1,11 @@
 import ctre
+import wpilib
 from ctre import WPI_TalonSRX as Talon
 from wpilib.drive.differentialdrive import DifferentialDrive
 from wpilib.speedcontrollergroup import SpeedControllerGroup
 from robotmap import kDriveTrain
 from wpilib.smartdashboard import SmartDashboard as SD
-from wpilib.command.subsystem import Subsystem
+from wpilib.command import Subsystem
 
 
 class DriveTrain(Subsystem):
@@ -14,13 +15,20 @@ class DriveTrain(Subsystem):
     to follow the "master".
     '''
 
-    def __init__(self):
+    def __init__(self, robot):
+
+        self.robot = robot
 
         # Initialize all controllers
         self.driveLeftMaster = Talon(kDriveTrain.lmId)
         self.driveLeftSlave = Talon(kDriveTrain.lsId)
         self.driveRightMaster = Talon(kDriveTrain.rmId)
         self.driveRightSlave = Talon(kDriveTrain.rsId)
+
+        wpilib.LiveWindow.addActuator("DriveTrain",
+                                      "LeftMaster", self.driveLeftMaster)
+        wpilib.LiveWindow.addActuator("DriveTrain",
+                                      "RightMaster", self.driveRightMaster)
 
         # Connect the slaves to the masters on each side
         self.driveLeftSlave.follow(self.driveLeftMaster)
@@ -44,13 +52,17 @@ class DriveTrain(Subsystem):
         self.driveLeftMaster.setSensorPhase(True)
         self.driveRightMaster.setSensorPhase(True)
 
+        # these supposedly aren't part of the WPI_TalonSRX class
+        # self.driveLeftMaster.setSelectedSensorPostion(0, 0, 10)
+        # self.driveRightMaster.setSelectedSensorPosition(0, 0, 10)
+
         # Throw data on the SmartDashboard so we can work with it.
-        SD.putNumber(
-            'Left Quad Pos.',
-            self.driveLeftMaster.getQuadraturePosition())
-        SD.putNumber(
-            'Right Quad Pos.',
-            self.driveRightMaster.getQuadraturePosition())
+        # SD.putNumber(
+        #     'Left Quad Pos.',
+        #     self.driveLeftMaster.getQuadraturePosition())
+        # SD.putNumber(
+        #     'Right Quad Pos.',
+        #     self.driveRightMaster.getQuadraturePosition())
 
         self.leftVel = None
         self.leftPos = None
@@ -65,6 +77,8 @@ class DriveTrain(Subsystem):
         self.drive = DifferentialDrive(self.driveControllerLeft,
                                        self.driveControllerRight)
 
+        super().__init__()
+
     def moveToPosition(self, position, side='left'):
 
         if side == 'left':
@@ -74,8 +88,6 @@ class DriveTrain(Subsystem):
             self.driveRightMaster.set(Talon.ControlMode.Position, position)
 
     def stop(self):
-        # self.driveLeftMaster.set(0)
-        # self.driveRightMaster.set(0)
         self.drive.stopMotor()
 
     def arcade(self, speed, rotation):
