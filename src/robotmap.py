@@ -1,27 +1,13 @@
-class RobotConstants():
-    pass
+DriveTrain = {'left_master':1,
+              'left_slave':3,
+              'right_master':2,
+              'right_slave':4,
+}
 
 
-kDriveTrain = RobotConstants()
-
-# Controller IDs for the motors
-# lmId is for the Left Master controller
-# lsId is for the Left Slave controller
-# Same applies for the right side: rmId, rsId
-kDriveTrain.lmId = 1
-kDriveTrain.rmId = 2
-kDriveTrain.lsId = 3
-kDriveTrain.rsId = 4
-
-# Which slot to use for PID Gains
-kDriveTrain.PIDslot = 0
-# Which PID loop to use
-kDriveTrain.PIDloop = 0
-# Timout in ms to wait for command confirmation
-kDriveTrain.PIDtimeout = 10
+Sticks = {'drive':0,
+          'control':1,
+}
 
 
-kStick = RobotConstants()
 
-kStick.driveId = 0
-kStick.controlId = 1
