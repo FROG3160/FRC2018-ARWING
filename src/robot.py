@@ -37,11 +37,17 @@ class Robot(wpilib.IterativeRobot):
         """
         This function is run once each time the robot enters autonomous mode.
         """
-        pass
+        # get field data
+        self.fielddata = wpilib.DriverStation.getInstance().getGameSpecificMessage()        
 
     def autonomousPeriodic(self):
         """This function is called periodically during autonomous."""
-        self.drive.arcade(.5 , 0)
+        nearswitch, scale, farswitch = list(self.fielddata)
+        
+        if nearswitch == 'R':
+            self.drive.arcade(.5, .2)
+        else:
+            self.drive.arcade(.5, -.2)
 
     def teleopInit(self):
         pass
