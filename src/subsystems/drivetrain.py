@@ -3,7 +3,6 @@ import wpilib
 from ctre import WPI_TalonSRX as Talon
 from wpilib.drive.differentialdrive import DifferentialDrive
 from wpilib.speedcontrollergroup import SpeedControllerGroup
-from robotmap import kDriveTrain
 from wpilib.smartdashboard import SmartDashboard as SD
 from wpilib.command import Subsystem
 
@@ -20,10 +19,10 @@ class DriveTrain(Subsystem):
         self.robot = robot
 
         # Initialize all controllers
-        self.driveLeftMaster = Talon(kDriveTrain.lmId)
-        self.driveLeftSlave = Talon(kDriveTrain.lsId)
-        self.driveRightMaster = Talon(kDriveTrain.rmId)
-        self.driveRightSlave = Talon(kDriveTrain.rsId)
+        self.driveLeftMaster = Talon(self.robot.kDriveTrain['left_master'])
+        self.driveLeftSlave = Talon(self.robot.kDriveTrain['left_slave'])
+        self.driveRightMaster = Talon(self.robot.kDriveTrain['right_master'])
+        self.driveRightSlave = Talon(self.robot.kDriveTrain['right_slave'])
 
         wpilib.LiveWindow.addActuator("DriveTrain",
                                       "LeftMaster", self.driveLeftMaster)
