@@ -51,9 +51,8 @@ class DriveTrain(Subsystem):
         self.driveLeftMaster.setSensorPhase(True)
         self.driveRightMaster.setSensorPhase(True)
 
-        # these supposedly aren't part of the WPI_TalonSRX class
-        # self.driveLeftMaster.setSelectedSensorPostion(0, 0, 10)
-        # self.driveRightMaster.setSelectedSensorPosition(0, 0, 10)
+        self.driveLeftMaster.setQuadraturePosition(0, 0)
+        self.driveRightMaster.setQuadraturePosition(0, 0)    
 
         # Throw data on the SmartDashboard so we can work with it.
         # SD.putNumber(
@@ -75,7 +74,19 @@ class DriveTrain(Subsystem):
         self.driveControllerRight.setInverted(True)
         self.drive = DifferentialDrive(self.driveControllerLeft,
                                        self.driveControllerRight)
-
+        # self.drive = DifferentialDrive(self.driveLeftMaster,
+        #                               self.driveRightMaster)
+        
+        wpilib.LiveWindow.addActuator("DriveTrain", "Left Master", self.driveLeftMaster)
+        wpilib.LiveWindow.addActuator("DriveTrain", "Right Master", self.driveRightMaster)
+        #wpilib.LiveWindow.add(self.driveLeftSlave)
+        #wpilib.LiveWindow.add(self.driveRightSlave)
+        #wpilib.Sendable.setName(self.drive, 'Drive')
+        #wpilib.LiveWindow.add(self.drive)
+        #wpilib.Sendable.setName(self.driveLeftMaster, 'driveLeftMaster')
+        #wpilib.LiveWindow.add(self.driveRightMaster)
+        
+        
         super().__init__()
 
     def moveToPosition(self, position, side='left'):
