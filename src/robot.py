@@ -22,6 +22,8 @@ class Robot(wpilib.IterativeRobot):
         self.dStick = Joystick(self.kSticks['drive'])
         self.cStick = Joystick(self.kSticks['control'])
         self.drive = Drive(self)
+        
+        self.fielddata = None
 
 
     def robotPeriodic(self):
@@ -37,20 +39,27 @@ class Robot(wpilib.IterativeRobot):
         """
         This function is run once each time the robot enters autonomous mode.
         """
-        # get field data
-        self.fielddata = wpilib.DriverStation.getInstance().getGameSpecificMessage()        
+        self.drive.driveLeftMaster.setQuadraturePosition(0, 0)
+        self.drive.driveRightMaster.setQuadraturePosition(0, 0)     
 
     def autonomousPeriodic(self):
         """This function is called periodically during autonomous."""
-        nearswitch, scale, farswitch = list(self.fielddata)
         
-        if nearswitch == 'R':
-            self.drive.arcade(.5, .2)
-        else:
-            self.drive.arcade(.5, -.2)
+        ## get field data
+        #if not self.fielddata:
+            #self.fielddata = wpilib.DriverStation.getInstance().getGameSpecificMessage()          
+            #nearswitch, scale, farswitch = list(self.fielddata)
+        
+        #if self.fielddata[0] == 'R':
+            #self.drive.arcade(.5, .2)
+        #else:
+            #self.drive.arcade(.5, -.2)
+            
+        self.drive.arcade(.5, 0)
 
     def teleopInit(self):
-        pass
+        self.drive.driveLeftMaster.setQuadraturePosition(0, 0)
+        self.drive.driveRightMaster.setQuadraturePosition(0, 0)
 
     def teleopPeriodic(self):
         """This function is called periodically during operator control."""
@@ -63,7 +72,6 @@ class Robot(wpilib.IterativeRobot):
         pass
 
     def testPeriodic(self):
-        wpilib.LiveWindow.setEnabled(True)
         pass
 
 
