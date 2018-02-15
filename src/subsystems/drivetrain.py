@@ -42,9 +42,9 @@ class DriveTrain(Subsystem):
 
         # Configures each master to use the attached Mag Encoders
         self.driveLeftMaster.configSelectedFeedbackSensor(
-            ctre.FeedbackDevice.CTRE_MagEncoder_Relative, 0, 0)
+            ctre.talonsrx.TalonSRX.FeedbackDevice.CTRE_MagEncoder_Relative, 0, 0)
         self.driveRightMaster.configSelectedFeedbackSensor(
-            ctre.FeedbackDevice.CTRE_MagEncoder_Relative, 0, 0)
+            ctre.talonsrx.TalonSRX.FeedbackDevice.CTRE_MagEncoder_Relative, 0, 0)
 
         # Reverses the encoder direction so forward movement always
         # results in a positive increase in the encoder ticks.
@@ -82,9 +82,9 @@ class DriveTrain(Subsystem):
 
         if side == 'left':
             self.driveLeftMaster.setSafetyEnabled(False)
-            self.driveLeftMaster.set(Talon.ControlMode.Position, position)
+            self.driveLeftMaster.set(ctre.talonsrx.TalonSRX.ControlMode.Position, position)
         else:
-            self.driveRightMaster.set(Talon.ControlMode.Position, position)
+            self.driveRightMaster.set(ctre.talonsrx.TalonSRX.ControlMode.Position, position)
 
     def stop(self):
         self.drive.stopMotor()
