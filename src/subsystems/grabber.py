@@ -14,6 +14,11 @@ class Grabber(Subsystem):
         self.armUS = wpilib.AnalogInput(self.robot.kCubeGrabber['ultra_sonic'])
         self.armSwitch = wpilib.DigitalInput(self.robot.kCubeGrabber['switch'])
         
+        self.armClosePosition = self.robot.kCubeGrabber['close']
+        self.armOpenPosition = self.robot.kCubeGrabber['open']
+        
+        self.driverTwo = self.robot.cStick
+        
         self.armSolenoid = wpilib.Solenoid(self.robot.pneumaticControlModuleCANID, self.robot.kCubeGrabber['solenoid'])
         
         """
