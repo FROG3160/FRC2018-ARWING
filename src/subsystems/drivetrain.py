@@ -39,6 +39,13 @@ class DriveTrain(Subsystem):
         self.driveLeftMaster.setInverted(False)
         self.driveRightSlave.setInverted(True)
         self.driveRightMaster.setInverted(True)
+        
+        
+        """
+        Initializes the count for toggling which side of the 
+        robot will be considered the front when driving.
+        """
+        self.robotFrontToggleCount = 2
 
         # Configures each master to use the attached Mag Encoders
         self.driveLeftMaster.configSelectedFeedbackSensor(
@@ -51,8 +58,9 @@ class DriveTrain(Subsystem):
         self.driveLeftMaster.setSensorPhase(True)
         self.driveRightMaster.setSensorPhase(True)
 
-        self.driveLeftMaster.setQuadraturePosition(0, 0)
-        self.driveRightMaster.setQuadraturePosition(0, 0)    
+        # these supposedly aren't part of the WPI_TalonSRX class
+        # self.driveLeftMaster.setSelectedSensorPostion(0, 0, 10)
+        # self.driveRightMaster.setSelectedSensorPosition(0, 0, 10)
 
         # Throw data on the SmartDashboard so we can work with it.
         # SD.putNumber(
@@ -74,19 +82,7 @@ class DriveTrain(Subsystem):
         self.driveControllerRight.setInverted(True)
         self.drive = DifferentialDrive(self.driveControllerLeft,
                                        self.driveControllerRight)
-        # self.drive = DifferentialDrive(self.driveLeftMaster,
-        #                               self.driveRightMaster)
-        
-        wpilib.LiveWindow.addActuator("DriveTrain", "Left Master", self.driveLeftMaster)
-        wpilib.LiveWindow.addActuator("DriveTrain", "Right Master", self.driveRightMaster)
-        #wpilib.LiveWindow.add(self.driveLeftSlave)
-        #wpilib.LiveWindow.add(self.driveRightSlave)
-        #wpilib.Sendable.setName(self.drive, 'Drive')
-        #wpilib.LiveWindow.add(self.drive)
-        #wpilib.Sendable.setName(self.driveLeftMaster, 'driveLeftMaster')
-        #wpilib.LiveWindow.add(self.driveRightMaster)
-        
-        
+
         super().__init__()
 
     def moveToPosition(self, position, side='left'):
@@ -103,6 +99,28 @@ class DriveTrain(Subsystem):
     def arcade(self, speed, rotation):
         self.updateSD()
         self.drive.arcadeDrive(speed, rotation, True)
+        
+        """
+        This if statement acts as a toggle to change which motors are 
+        inverted, completely changing the "front" of the robot. This is
+        useful for when we are about to climb.
+        """
+        if self.robot.dStick.getRawButtonReleased(3) and (self.robotFrontToggleCount%2 == 0):
+            self.robotFrontToggleCount += 1
+            
+            self.driveLeftSlave.setInverted(False)
+            self.driveLeftMaster.setInverted(False)
+            self.driveRightSlave.setInverted(True)
+            self.driveRightMaster.setInverted(True)
+            
+        elif self.robot.dStick.getRawButtonReleased(3) and (self.robotFrontToggleCount%2 == 1):
+            self.robotFrontToggleCount += 1
+            
+            self.driveLeftSlave.setInverted(True)
+            self.driveLeftMaster.setInverted(True)
+            self.driveRightSlave.setInverted(False)
+            self.driveRightMaster.setInverted(False)
+            
 
     def updateSD(self):
 
