@@ -114,6 +114,10 @@ class DriveTrain(Subsystem):
             self.drive.arcadeDrive(-speed, rotation, True)
             
     def arcadeWithRPM(self, speed, rotation, maxRPM):
+        
+        if self.robot.dStick.getRawButtonReleased(3):
+            self.robotFrontToggleCount += 1
+            
         self.driveLeftMaster.setSafetyEnabled(False)
         
         XSpeed = wpilib.RobotDrive.limit(speed)
@@ -121,6 +125,10 @@ class DriveTrain(Subsystem):
 
         ZRotation = wpilib.RobotDrive.limit(rotation)
         ZRotation = self.applyDeadband(ZRotation, .02) 
+        
+        if self.robotFrontToggleCount%2 == 1:
+            XSpeed = -XSpeed
+        
        
         XSpeed = math.copysign(XSpeed * XSpeed, XSpeed)
         ZRotation = math.copysign(ZRotation * ZRotation, ZRotation)
