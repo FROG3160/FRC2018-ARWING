@@ -8,4 +8,4 @@ install:
   - pip install --no-deps -r travis-requirements.txt
 # command to run tests
 script:
-- ./run_tests.sh all
+- ./src/python robot.py test
