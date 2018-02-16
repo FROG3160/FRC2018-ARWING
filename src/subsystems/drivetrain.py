@@ -66,6 +66,8 @@ class DriveTrain(Subsystem):
         self.leftPos = None
         self.rightVel = None
         self.rightPos = None
+        self.leftMaxVel = 0
+        self.rightMaxVel = 0        
 
         # self.driveLeftMaster.config_kP(0, .3, 10)
 
@@ -105,12 +107,21 @@ class DriveTrain(Subsystem):
         self.drive.arcadeDrive(speed, rotation, True)
 
     def updateSD(self):
+        
+
 
         leftVel = self.driveLeftMaster.getSelectedSensorVelocity(0)
         leftPos = self.driveLeftMaster.getSelectedSensorPosition(0)
 
         rightVel = self.driveRightMaster.getSelectedSensorVelocity(0)
         rightPos = self.driveRightMaster.getSelectedSensorPosition(0)
+        
+        # keep the biggest velocity values
+        if self.leftMaxVel < leftVel:
+            self.leftMaxVel = leftVel
+            
+        if self.rightMaxVel < rightVel:
+            self.rightMaxVel = rightVel
 
         # calculate side deltas
         if self.leftVel:
@@ -151,11 +162,15 @@ class DriveTrain(Subsystem):
 
         SD.putNumber('DifferenceVel', differenceVel)
         SD.putNumber('DifferencePos', differencePos)
+        
+        SD.putNumber('Left Max Vel', self.leftMaxVel)
+        SD.putNumber('Right Max Vel', self.rightMaxVel)
 
         self.leftVel = leftVel
         self.leftPos = leftPos
         self.rightVel = rightVel
         self.rightPos = rightPos
+        
 
         # kP = self.driveLeftMaster.configGetParameter(
         #     self.driveLeftMaster.ParamEnum.eProfileParamSlot_P, 0, 10)

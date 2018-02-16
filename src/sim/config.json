@@ -13,8 +13,8 @@
   	"field": {
       "w": 47,
       "h": 32,
-      "px_per_ft": 10,
-      "image": "power_up_2018_zones.png"
+      "px_per_ft": 10
+
     }
   }
 }
