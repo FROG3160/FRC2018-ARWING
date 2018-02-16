@@ -67,8 +67,10 @@ class DriveTrain(Subsystem):
         self.rightVel = None
         self.rightPos = None
         self.leftMaxVel = 0
-        self.rightMaxVel = 0        
-
+        self.rightMaxVel = 0
+        self.leftMinVel = 0
+        self.rightMinVel = 0
+        
         # self.driveLeftMaster.config_kP(0, .3, 10)
 
         self.driveControllerLeft = SpeedControllerGroup(self.driveLeftMaster)
@@ -123,6 +125,13 @@ class DriveTrain(Subsystem):
         if self.rightMaxVel < rightVel:
             self.rightMaxVel = rightVel
 
+        # keep the smallest velocity values
+        if self.leftMinVel > leftVel:
+            self.leftMinVel = leftVel
+
+        if self.rightMinVel > rightVel:
+            self.rightMinVel = rightVel
+
         # calculate side deltas
         if self.leftVel:
             leftVelDelta = leftVel - self.leftVel
@@ -165,6 +174,9 @@ class DriveTrain(Subsystem):
         
         SD.putNumber('Left Max Vel', self.leftMaxVel)
         SD.putNumber('Right Max Vel', self.rightMaxVel)
+        
+        SD.putNumber('Left Min Vel', self.leftMinVel)
+        SD.putNumber('Right Min Vel', self.rightMinVel)
 
         self.leftVel = leftVel
         self.leftPos = leftPos
