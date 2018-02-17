@@ -5,16 +5,17 @@
   	"robot": {
   	  "w": 3,
   	  "h": 2.33,
-      "starting_x": 35, 
-      "starting_y": 25,
-      "starting_angle": 180
+      "starting_x": 3,
+      "starting_y": 6,
+      "starting_angle": 0
   	},
   	
   	"field": {
-      "w": 47,
-      "h": 32,
+      "w": 40,
+      "h": 40,
       "px_per_ft": 10
 
     }
   }
 }
+
