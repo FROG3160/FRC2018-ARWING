@@ -32,6 +32,8 @@ class Grabber(Subsystem):
         """
         self.armModeToggleCount = 2
         self.openToggleCount = 3
+        
+        super().__init__()
     
     def grabberFunction(self):
         """

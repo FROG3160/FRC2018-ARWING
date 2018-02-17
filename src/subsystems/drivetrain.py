@@ -1,5 +1,6 @@
 import ctre
 import wpilib
+import math
 from ctre import WPI_TalonSRX as Talon
 from wpilib.drive.differentialdrive import DifferentialDrive
 from wpilib.speedcontrollergroup import SpeedControllerGroup
@@ -39,6 +40,13 @@ class DriveTrain(Subsystem):
         self.driveLeftMaster.setInverted(False)
         self.driveRightSlave.setInverted(True)
         self.driveRightMaster.setInverted(True)
+        
+        
+        """
+        Initializes the count for toggling which side of the 
+        robot will be considered the front when driving.
+        """
+        self.robotFrontToggleCount = 2
 
         # Configures each master to use the attached Mag Encoders
         self.driveLeftMaster.configSelectedFeedbackSensor(
@@ -51,8 +59,9 @@ class DriveTrain(Subsystem):
         self.driveLeftMaster.setSensorPhase(True)
         self.driveRightMaster.setSensorPhase(True)
 
-        self.driveLeftMaster.setQuadraturePosition(0, 0)
-        self.driveRightMaster.setQuadraturePosition(0, 0)    
+        # these supposedly aren't part of the WPI_TalonSRX class
+        # self.driveLeftMaster.setSelectedSensorPostion(0, 0, 10)
+        # self.driveRightMaster.setSelectedSensorPosition(0, 0, 10)
 
         # Throw data on the SmartDashboard so we can work with it.
         # SD.putNumber(
@@ -78,19 +87,7 @@ class DriveTrain(Subsystem):
         self.driveControllerRight.setInverted(True)
         self.drive = DifferentialDrive(self.driveControllerLeft,
                                        self.driveControllerRight)
-        # self.drive = DifferentialDrive(self.driveLeftMaster,
-        #                               self.driveRightMaster)
-        
-        wpilib.LiveWindow.addActuator("DriveTrain", "Left Master", self.driveLeftMaster)
-        wpilib.LiveWindow.addActuator("DriveTrain", "Right Master", self.driveRightMaster)
-        #wpilib.LiveWindow.add(self.driveLeftSlave)
-        #wpilib.LiveWindow.add(self.driveRightSlave)
-        #wpilib.Sendable.setName(self.drive, 'Drive')
-        #wpilib.LiveWindow.add(self.drive)
-        #wpilib.Sendable.setName(self.driveLeftMaster, 'driveLeftMaster')
-        #wpilib.LiveWindow.add(self.driveRightMaster)
-        
-        
+
         super().__init__()
 
     def moveToPosition(self, position, side='left'):
@@ -106,8 +103,66 @@ class DriveTrain(Subsystem):
 
     def arcade(self, speed, rotation):
         self.updateSD()
-        self.drive.arcadeDrive(speed, rotation, True)
+        
+        if self.robot.dStick.getRawButtonReleased(3):
+            self.robotFrontToggleCount += 1
+        
+        """
+        This if statement acts as a toggle to change which motors are 
+        inverted, completely changing the "front" of the robot. This is
+        useful for when we are about to climb.
+        """
+        if self.robotFrontToggleCount%2 == 0:
+            self.drive.arcadeDrive(speed, rotation, True)      
+        else:
+            self.drive.arcadeDrive(-speed, rotation, True)
+            
+    def arcadeWithRPM(self, speed, rotation, maxRPM):
+        
+        if self.robot.dStick.getRawButtonReleased(3):
+            self.robotFrontToggleCount += 1
+            
+        self.driveLeftMaster.setSafetyEnabled(False)
+        
+        XSpeed = wpilib.RobotDrive.limit(speed)
+        XSpeed = self.applyDeadband(XSpeed, .02)
 
+        ZRotation = wpilib.RobotDrive.limit(rotation)
+        ZRotation = self.applyDeadband(ZRotation, .02) 
+        
+        if self.robotFrontToggleCount%2 == 1:
+            XSpeed = -XSpeed
+        
+       
+        XSpeed = math.copysign(XSpeed * XSpeed, XSpeed)
+        ZRotation = math.copysign(ZRotation * ZRotation, ZRotation)
+
+        maxInput = math.copysign(max(abs(XSpeed), abs(ZRotation)), XSpeed)
+
+        if XSpeed >= 0.0:
+            if ZRotation >= 0.0:
+                leftMotorSpeed = maxInput
+                rightMotorSpeed = XSpeed - ZRotation
+            else:
+                leftMotorSpeed = XSpeed + ZRotation
+                rightMotorSpeed = maxInput
+        else:
+            if ZRotation >= 0.0:
+                leftMotorSpeed = XSpeed + ZRotation
+                rightMotorSpeed = maxInput
+            else:
+                leftMotorSpeed = maxInput
+                rightMotorSpeed = XSpeed - ZRotation
+
+        leftMotorSpeed = wpilib.RobotDrive.limit(leftMotorSpeed)
+        rightMotorSpeed = wpilib.RobotDrive.limit(rightMotorSpeed)
+        
+        leftMotorRPM = leftMotorSpeed * maxRPM
+        rightMotorRPM =  rightMotorSpeed * maxRPM
+        
+        self.driveLeftMaster.set(ctre.talonsrx.TalonSRX.ControlMode.Velocity, leftMotorRPM)
+        self.driveRightMaster.set(ctre.talonsrx.TalonSRX.ControlMode.Velocity, rightMotorRPM)
+        
     def updateSD(self):
         
 
@@ -197,4 +252,16 @@ class DriveTrain(Subsystem):
         #SD.putNumber(
         #    'Left Integral',
         #    self.driveLeftMaster.getIntegralAccumulator(0))
+    def applyDeadband(self, value, deadband):
+        """Returns 0.0 if the given value is within the specified range around zero. The remaining range
+        between the deadband and 1.0 is scaled from 0.0 to 1.0.
 
+        :param value: value to clip
+        :param deadband: range around zero
+        """
+        if abs(value) > deadband:
+            if value < 0.0:
+                return (value - deadband) / (1.0 - deadband)
+            else:
+                return (value + deadband) / (1.0 - deadband)
+        return 0.0
