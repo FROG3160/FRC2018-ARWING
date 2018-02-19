@@ -118,13 +118,17 @@ class DriveTrain(Subsystem):
             self.drive.arcadeDrive(-speed, rotation, True)
             
     def arcadeWithRPM(self, speed, rotation, maxRPM):
+        self.updateSD()
+        self.driveLeftMaster.setSafetyEnabled(False)
         
         if self.robot.dStick.getRawButtonReleased(3):
             self.robotFrontToggleCount += 1
             
-        self.driveLeftMaster.setSafetyEnabled(False)
+        if self.robotFrontToggleCount%2 == 0:
+            XSpeed = wpilib.RobotDrive.limit(speed)
+        else:
+            XSpeed = wpilib.RobotDrive.limit(-speed)
         
-        XSpeed = wpilib.RobotDrive.limit(speed)
         XSpeed = self.applyDeadband(XSpeed, .02)
 
         ZRotation = wpilib.RobotDrive.limit(rotation)
@@ -252,6 +256,7 @@ class DriveTrain(Subsystem):
         #SD.putNumber(
         #    'Left Integral',
         #    self.driveLeftMaster.getIntegralAccumulator(0))
+  
     def applyDeadband(self, value, deadband):
         """Returns 0.0 if the given value is within the specified range around zero. The remaining range
         between the deadband and 1.0 is scaled from 0.0 to 1.0.
