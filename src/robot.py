@@ -10,6 +10,7 @@ from subsystems.drivetrain import DriveTrain as Drive
 from subsystems.grabber import Grabber
 from subsystems.elevator import Elevator
 from subsystems.climber import Climber
+from subsystems.autonomous import Autonomous
 
 
 class Robot(wpilib.IterativeRobot):
@@ -32,6 +33,8 @@ class Robot(wpilib.IterativeRobot):
         self.cubeGrabber = Grabber(self)
         self.elevator = Elevator(self)
         self.climber = Climber(self)
+        
+        self.autonomous = Autonomous(self)
 
 
     def robotPeriodic(self):
@@ -44,21 +47,12 @@ class Robot(wpilib.IterativeRobot):
         self.drive.stop()
 
     def autonomousInit(self):
-        """
-        This function is run once each time the robot enters autonomous mode.
-        """
-        # get field data
-        #self.fielddata = wpilib.DriverStation.getInstance().getGameSpecificMessage()        
+        """This function is run once each time the robot enters autonomous mode."""
+        self.autonomous.getGameData()
 
     def autonomousPeriodic(self):
         """This function is called periodically during autonomous."""
-        #nearswitch, scale, farswitch = list(self.fielddata)
-#         
-#         if nearswitch == 'R':
-#             self.drive.arcade(.5, .2)
-#         else:
-#             self.drive.arcade(.5, -.2)
-        pass
+        self.autonomous.run()
 
     def teleopInit(self):
         pass
