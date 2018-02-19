@@ -37,4 +37,3 @@ class Climber(Subsystem):
     def getCheckSwitch(self):
         return self.checkSwitch.get()
         
-        

@@ -170,3 +170,6 @@ class Grabber(Subsystem):
         """    
         self.leftArm.set(self.manualArmSpeed)
         self.rightArm.set(-self.manualArmSpeed)
+        
+    def getSwitch(self):
+        return self.armSwitch.get() == 1

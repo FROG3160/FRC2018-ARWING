@@ -6,6 +6,7 @@ from wpilib.drive.differentialdrive import DifferentialDrive
 from wpilib.speedcontrollergroup import SpeedControllerGroup
 from wpilib.smartdashboard import SmartDashboard as SD
 from wpilib.command import Subsystem
+from robotpy_ext.common_drivers.navx import AHRS
 
 
 class DriveTrain(Subsystem):
@@ -18,7 +19,9 @@ class DriveTrain(Subsystem):
     def __init__(self, robot):
 
         self.robot = robot
-
+        
+        self.initGyro()
+        
         # Initialize all controllers
         self.driveLeftMaster = Talon(self.robot.kDriveTrain['left_master'])
         self.driveLeftSlave = Talon(self.robot.kDriveTrain['left_slave'])
@@ -243,3 +246,58 @@ class DriveTrain(Subsystem):
             else:
                 return (value + deadband) / (1.0 - deadband)
         return 0.0
+    
+    def initGyro(self):
+        self.kP = 0.00
+        self.kI = 0.00
+        self.kD = 0.00
+        self.kF = 0.00
+        
+        self.kToleranceDegrees = 2.0
+        
+        self.ahrs = AHRS.create_spi()
+        
+        turnController = wpilib.PIDController(self.kP, self.kI, self.kD, self.kF, self.ahrs, output=self)
+
+        turnController.setInputRange(-180.0,  180.0)
+
+        turnController.setOutputRange(-1.0, 1.0)
+
+        turnController.setAbsoluteTolerance(self.kToleranceDegrees)
+
+        turnController.setContinuous(True)
+
+        
+
+        self.turnController = turnController
+
+        self.rotateToAngleRate = 0
+        
+        self.turnController
+        
+    def setAngle(self, angle, tolerance):
+        self.tolerance = tolerance
+        self.turnController.setSetpoint(angle)
+        
+        if (self.ahrs.getAngle() <= abs(angle + tolerance)) and (self.ahrs.getAngle() >= abs(angle - tolerance)):
+            self.turnController.disable()
+            
+            self.driveLeftMaster.set(0)
+            self.driveRightMaster.set(0)
+        else:
+            self.turnController.enable()
+            
+            self.driveLeftMaster.set(self.turnController.get())
+            self.driveRightMaster.set(-self.turnController.get())  
+            
+    def isInGyroPosition(self):
+        return (self.ahrs.getAngle() <= abs(self.ahrs.getSetpoint() + self.tolerance)) and (self.ahrs.getAngle() >= abs(self.ahrs.getSetpoint() - self.tolerance))
+                
+                
+                
+                
+                
+                
+                
+                
+                
