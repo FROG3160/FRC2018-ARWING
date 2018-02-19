@@ -19,7 +19,8 @@ CubeGrabber = {'left_arm':5,
                'close':True
 }
 
-Elevator = {'elevator_motor':7 
+Elevator = {'elevator_motor':7,
+            'bottom_switch':2
 }
 
 Climber = {'climb_motor': 8,
@@ -30,6 +31,7 @@ Climber = {'climb_motor': 8,
 
 """PCM CAN ID"""
 PCM = 0
+
 
 
 Sticks = {'drive':0,
