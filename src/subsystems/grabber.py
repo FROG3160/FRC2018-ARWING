@@ -2,7 +2,7 @@ import wpilib
 from ctre import WPI_TalonSRX as Talon
 from wpilib.command.subsystem import Subsystem
  
-class Grabber(Subsystem): 
+class cubeGrabber(Subsystem): 
        
     def __init__(self, robot):
         
@@ -68,11 +68,11 @@ class Grabber(Subsystem):
         """
         These send information over to the SmartDashboard
         """
-        wpilib.SmartDashboard.putNumber("Grabber Ultra Sonic", self.cubeDistanceIn)
-        wpilib.SmartDashboard.putNumber("Grabber Limit Switch", self.armSwitch.get())
+        wpilib.SmartDashboard.putNumber("cubeGrabber Ultra Sonic", self.cubeDistanceIn)
+        wpilib.SmartDashboard.putNumber("cubeGrabber Limit Switch", self.armSwitch.get())
         
     """
-    Code for resetting the Cube Grabber
+    Code for resetting the Cube cubeGrabber
     """
     def armGrabReset(self):
         """
@@ -102,8 +102,8 @@ class Grabber(Subsystem):
         5)If nothing is sensed the arms will be in a default position with the motors stopped and the arms open.
         """
         if self.driverTwo.getRawAxis(2) > .25:
-            self.leftArm.set(-1)
-            self.rightArm.set(1)
+            self.leftArm.set(1)
+            self.rightArm.set(-1)
             
             self.armSolenoid.set(self.armClosePosition)
             """This will prevent the arms from changing position when changing to Manual Mode."""
@@ -118,16 +118,16 @@ class Grabber(Subsystem):
             self.openToggleCount = 2
             
         elif (self.cubeDistanceIn <= self.spinDistance) and (self.cubeDistanceIn > self.closeDistance):
-            self.leftArm.set(1)
-            self.rightArm.set(-1)
+            self.leftArm.set(-1)
+            self.rightArm.set(1)
             
             self.armSolenoid.set(self.armOpenPosition)
             """This will prevent the arms from changing position when changing to Manual Mode."""
             self.openToggleCount = 3
             
         elif (self.cubeDistanceIn <= self.closeDistance):
-            self.leftArm.set(1)
-            self.rightArm.set(-1)
+            self.leftArm.set(-1)
+            self.rightArm.set(1)
             
             self.armSolenoid.set(self.armClosePosition)
             """This will prevent the arms from changing position when changing to Manual Mode."""
@@ -168,8 +168,8 @@ class Grabber(Subsystem):
         """
         Sets the speed of the intake wheels, using the makeshift axis made above as diret input.
         """    
-        self.leftArm.set(self.manualArmSpeed)
-        self.rightArm.set(-self.manualArmSpeed)
+        self.leftArm.set(-self.manualArmSpeed)
+        self.rightArm.set(self.manualArmSpeed)
         
     def getSwitch(self):
         return self.armSwitch.get() == 1
