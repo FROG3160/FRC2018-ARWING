@@ -5,9 +5,9 @@ import wpilib
 
 class Elevator(Subsystem):
     
-    kSwitch = 0
-    kScale = 0
-    kStart = 0
+    kSwitch = 1000
+    kScale = 3000
+    kStart = 500
     kBottom = 0
     
     
@@ -15,50 +15,51 @@ class Elevator(Subsystem):
         self.robot = robot
         
         self.elevator = Talon(self.robot.kElevator['elevator_motor'])
+        self.elevator.setInverted(True)
         self.driverTwo = self.robot.cStick
         
-        self.elevatorBottomSwitch = wpilib.DigitalInput(self.robot.kElevator['bottom_switch'])
-        
         self.elevator.configSelectedFeedbackSensor(
-        ctre.talonsrx.TalonSRX.FeedbackDevice.PulseWidthEncodedPosition, 0, 0)
+        ctre.talonsrx.TalonSRX.FeedbackDevice.CTRE_MagEncoder_Relative, 0, 0)
         
         self.elevator.configPeakOutputForward(1, 0)
-        self.elevator.configPeakOutputReverse(-1, 0)
+        self.elevator.configPeakOutputReverse(-0.25, 0)
+        self.elevator.configNominalOutputForward(0, 0)        
+        self.elevator.configNominalOutputReverse(0, 0)
+        
+        self.elevator.config_kP(0, 3, 0)
+        
+        self.elevator.setSafetyEnabled(False)
         
         super().__init__()
         
     def elevatorFunction(self):
-#         if self.elevatorBottomSwitch == 1:
-#             self.elevator.setPulseWidthPosition(0, 0)
-#             if -self.driverTwo.getRawAxis(1) < 0:
-#                 self.liftPower = 0
-#             else:
-#                 self.liftPower = -self.driverTwo.getRawAxis(1)
-#             
-#         else:      
-#             self.liftPower = -self.driverTwo.getRawAxis(1)
-#             
-#             
-        self.elevator.set(self.driverTwo.getRawAxis(1))
+        if self.elevator.isRevLimitSwitchClosed():
+            self.elevator.setPulseWidthPosition(0, 0)
+              
+        self.elevator.set(-self.driverTwo.getRawAxis(1))
+        wpilib.SmartDashboard.putNumber('elevator amperage', self.elevator.getOutputCurrent())
     
 #     def updateSD(self):
         
     
     def setElevatorPosition(self, position):
-        self.elevator.set(ctre.talonsrx.TalonSRX.FeedbackDevice.PulseWidthEncodedPosition, position)
+        if self.elevator.isRevLimitSwitchClosed():
+            self.elevator.setSelectedSensorPosition(0, 0, 0)
+            
+        self.elevator.set(ctre.talonsrx.TalonSRX.ControlMode.Position, position)
         
     def calibrateBottomAutonomous(self):
         
-        if self.elevatorBottomSwitch == 1:
+        if self.elevator.isRevLimitSwitchClosed():
+            self.elevator.setSelectedSensorPosition(0, 0, 0)
             self.elevator.set(0)
-            self.elevator.setPulseWidthPosition(0, 0)
 #             self.calibrateStep = 1
         else:
             self.elevator.set(-.5)
 #             self.calibrateStep = 0
             
     def getBottomLimit(self):
-        return self.elevatorBottomSwitch == 1
+        return self.elevator.isRevLimitSwitchClosed()
      
     def telemetry(self):
         wpilib.SmartDashboard.putNumber('Lift Position', self.elevator.getSelectedSensorPosition(0))        

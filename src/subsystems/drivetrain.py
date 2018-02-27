@@ -62,7 +62,7 @@ class DriveTrain(Subsystem):
         self.driveRightSlave.setInverted(True)
         self.driveRightMaster.setInverted(True)
         
-        
+        self.PID()
         
         
         """
@@ -122,8 +122,11 @@ class DriveTrain(Subsystem):
         self.driveRightMaster.configPeakOutputForward(self.speed, 0)
         self.driveRightMaster.configPeakOutputReverse(-self.speed, 0) 
         
-        self.driveLeftMaster.config_kP(0, .055, 0)
-        self.driveRightMaster.config_kP(0, .055, 0)
+#         self.driveLeftMaster.config_kP(0, .055, 0)
+#         self.driveRightMaster.config_kP(0, .055, 0)
+
+        self.driveLeftMaster.config_kP(0, 20, 0)
+        self.driveRightMaster.config_kP(0, 20, 0)
         
         self.driveLeftMaster.config_kF(0, 0.0, 0)
         self.driveRightMaster.config_kF(0, 0.0, 0)
@@ -301,34 +304,47 @@ class DriveTrain(Subsystem):
     
         
     def setAngle(self, angle, tolerance):
-        self.tolerance = tolerance
+        #self.tolerance = tolerance
+            
+        self.turnController.setSetpoint(angle)
+       
         
         if (self.ahrs.getYaw() <= abs(angle + tolerance)) and (self.ahrs.getYaw() >= abs(angle - tolerance)):            
+            self.turnController.disable()
+            
             self.driveLeftMaster.set(0)
             self.driveRightMaster.set(0)
-        else:
-            self.PID(angle)
             
-            self.driveLeftMaster.set(-self.rcw)
-            self.driveRightMaster.set(self.rcw)  
+        else:
+            self.turnController.enable()
+            
+            self.drive.arcadeDrive(0, self.output)
+
+            
+
+            #self.leftTurnController.setSetpoint(angle)
     
             
     def isInGyroPosition(self):
-        return ((self.ahrs.getYaw() - self.robot.autonomous.startingYaw) <= abs(self.setpoint + self.tolerance)) and ((self.ahrs.getYaw() - self.robot.autonomous.startingYaw) >= abs(self.setpoint - self.tolerance))
+        return ((self.ahrs.getYaw() - self.robot.autonomous.startingYaw) <= (self.turnController.getSetpoint() + self.robot.autonomous.ANGLE_TOLERANCE)) and ((self.ahrs.getYaw() - self.robot.autonomous.startingYaw) >= (self.turnController.getSetpoint() - self.robot.autonomous.ANGLE_TOLERANCE))
                    
-    def PID(self, setpoint):
-        self.kP = 0.02
+    def PID(self):
+        self.kP = 0.3
         self.kI = 0.00
         self.kD = 0.00
         self.kF = 0.00
         
-        self.setpoint = setpoint
+        self.turnController = wpilib.PIDController(self.kP, self.kI, self.kD, self.kF, self.ahrs, output=self)
         
-                            
-        error = setpoint - self.ahrs.getYaw()# Error = Target - Actual
-        self.integral = self.kI + (error*.02)
-        derivative = (error - self.previousError) / .02
-        self.rcw = self.kP*error + self.kI*self.integral + self.kD*derivative
-        self.previousError = error
                 
+        self.turnController.setInputRange(-180, 180)
+        self.turnController.setOutputRange(-0.5, 0.5)
+
+        
+        self.turnController.disable()
+
+        
+        
+    def pidWrite(self, output):
+        self.output = output       
                 
