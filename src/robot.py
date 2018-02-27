@@ -52,15 +52,16 @@ class Robot(wpilib.IterativeRobot):
     def autonomousInit(self):
         """This function is run once each time the robot enters autonomous mode."""
         self.autonomous = Autonomous(self)
-        self.autonomous.getGameData()
+        #self.autonomous.getGameData()
         self.autonomous.reset()
         self.drive.autoInit()
 
     def autonomousPeriodic(self):
         """This function is called periodically during autonomous."""
         #self.autonomous.run()
-        #self.autonomous.testMove(self.autonomous.magEncoderInchesToTicks(12*6), -1, True)
-        self.autonomous.testAngle(90, -1)
+        #self.autonomous.testMove(self.autonomous.magEncoderInchesToTicks(12*6), 10, True)
+        #self.autonomous.testAngle(-180, 10)
+        self.autonomous.run()
         self.autonomous.telemetry()
         
     def teleopInit(self):
