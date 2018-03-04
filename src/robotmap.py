@@ -11,26 +11,27 @@ DriveTrain = {'left_master':1,
 }
 
 CubeGrabber = {'left_arm':5,
-               'right_arm':6,
-               'solenoid':0,
-               'ultra_sonic':3,
-               'switch':0,
-               'open':False,
-               'close':True
+               'right_arm':7,
+               'solenoid':1,
+               'ultra_sonic':1,
+               'switch':2,
+               'close':False,
+               'open':True
 }
 
-Elevator = {'elevator_motor':7,
-            'bottom_switch':2
+Elevator = {'elevator_motor':6,
+            'bottom_switch':4
 }
 
 Climber = {'climb_motor': 8,
-           'solenoid':1,
-           'check_switch':1,
+           'solenoid':0,
+           'solenoid_2':2,
+           'check_switch':0,
            'lights': " "
 }
 
 """PCM CAN ID"""
-PCM = 0
+PCM = 10
 
 
 
