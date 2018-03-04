@@ -39,6 +39,14 @@ class Robot(wpilib.IterativeRobot):
         
     
 
+        # TODO:  see examples/pacgoat/robot.py
+        # we need Classes defining autonomous commands to call for Forward
+        # and Reverse
+        #self.autoChooser = wpilib.SendableChooser()
+        #self.autoChooser.addDefault("Forward", Forward(self))
+        #self.autoChooser.addObject("Reverse", Reverse(self))
+        #wpilib.SmartDashboard.putData("Auto Mode", self.autoChooser)        
+
 
     def robotPeriodic(self):
         pass
@@ -58,12 +66,20 @@ class Robot(wpilib.IterativeRobot):
 
     def autonomousPeriodic(self):
         """This function is called periodically during autonomous."""
+
         #self.autonomous.run()
         #self.autonomous.testMove(self.autonomous.magEncoderInchesToTicks(12*6), 10, True)
         #self.autonomous.testAngle(-180, 10)
         self.autonomous.run()
         self.autonomous.telemetry()
-        
+
+        #nearswitch, scale, farswitch = list(self.fielddata)
+#         
+#         if nearswitch == 'R':
+#             self.drive.arcade(.5, .2)
+#         else:
+#             self.drive.arcade(.5, -.2)
+
     def teleopInit(self):
         self.drive.teleInit()
 
@@ -72,15 +88,25 @@ class Robot(wpilib.IterativeRobot):
         speed = self.dStick.getY() * -1
         rotation = self.dStick.getTwist()
         # self.drive.moveSpeed(speed, speed)
-         
-        self.drive.arcadeWithRPM(speed, rotation, 2800)
-          
+
+        if self.isSimulation():
+            self.drive.arcade(speed, rotation)
+        else:
+            self.drive.arcadeWithRPM(speed, rotation, 2800)
+            
         self.cubeGrabber.grabberFunction()
 #          
         self.elevator.elevatorFunction()
         self.elevator.telemetry()
           
         self.climber.climberFunction()
+
+        # TODO:  need something like this in commands that autonomous or teleop 
+        # would run to make sure an exception doesn't crash the code during
+        # competition.
+        #raise ValueError("Checking to see what happens when we get an exception")
+
+
 
     def testInit(self):
         pass
