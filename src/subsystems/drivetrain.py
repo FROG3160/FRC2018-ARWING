@@ -20,7 +20,11 @@ class DriveTrain(Subsystem):
 
         self.robot = robot
         
-        self.ahrs = AHRS.create_spi()    
+        self.ahrs = AHRS.create_spi()  
+        self.ahrs.reset()
+        
+#         self.angleAdjustment = self.ahrs.getAngle()
+#         self.ahrs.setAngleAdjustment(self.angleAdjustment)
         # Initialize all controllers
         self.driveLeftMaster = Talon(self.robot.kDriveTrain['left_master'])
         self.driveLeftSlave = Talon(self.robot.kDriveTrain['left_slave'])
@@ -101,11 +105,7 @@ class DriveTrain(Subsystem):
         self.leftPos = None
         self.rightVel = None
         self.rightPos = None
-        self.leftMaxVel = 0
-        self.rightMaxVel = 0
-        self.leftMinVel = 0
-        self.rightMinVel = 0
-        
+
         # self.driveLeftMaster.config_kP(0, .3, 10)
 
         self.driveControllerLeft = SpeedControllerGroup(self.driveLeftMaster)
@@ -118,19 +118,20 @@ class DriveTrain(Subsystem):
         self.previousError = 0
 
         super().__init__()
+        
     def autoInit(self):
-        self.speed = .4
+        self.speed = .5
         self.driveLeftMaster.configPeakOutputForward(self.speed, 0)
         self.driveLeftMaster.configPeakOutputReverse(-self.speed, 0)
         
         self.driveRightMaster.configPeakOutputForward(self.speed, 0)
         self.driveRightMaster.configPeakOutputReverse(-self.speed, 0) 
         
-#         self.driveLeftMaster.config_kP(0, .055, 0)
-#         self.driveRightMaster.config_kP(0, .055, 0)
+        self.driveLeftMaster.config_kP(0, .055, 0)
+        self.driveRightMaster.config_kP(0, .055, 0)
 
-        self.driveLeftMaster.config_kP(0, 20, 0)
-        self.driveRightMaster.config_kP(0, 20, 0)
+#         self.driveLeftMaster.config_kP(0, 20, 0)
+#         self.driveRightMaster.config_kP(0, 20, 0)
         
         self.driveLeftMaster.config_kF(0, 0.0, 0)
         self.driveRightMaster.config_kF(0, 0.0, 0)
@@ -138,7 +139,7 @@ class DriveTrain(Subsystem):
   
         
     def teleInit(self):
-        self.speed = .75
+        self.speed = .6
         self.driveLeftMaster.configPeakOutputForward(self.speed, 0)
         self.driveLeftMaster.configPeakOutputReverse(-self.speed, 0)
         
@@ -223,28 +224,12 @@ class DriveTrain(Subsystem):
         self.driveRightMaster.set(ctre.talonsrx.TalonSRX.ControlMode.Velocity, rightMotorRPM)
         
     def updateSD(self):
-        
-
 
         leftVel = self.driveLeftMaster.getSelectedSensorVelocity(0)
         leftPos = self.driveLeftMaster.getSelectedSensorPosition(0)
 
         rightVel = self.driveRightMaster.getSelectedSensorVelocity(0)
         rightPos = self.driveRightMaster.getSelectedSensorPosition(0)
-        
-        # keep the biggest velocity values
-        if self.leftMaxVel < leftVel:
-            self.leftMaxVel = leftVel
-            
-        if self.rightMaxVel < rightVel:
-            self.rightMaxVel = rightVel
-
-        # keep the smallest velocity values
-        if self.leftMinVel > leftVel:
-            self.leftMinVel = leftVel
-
-        if self.rightMinVel > rightVel:
-            self.rightMinVel = rightVel
 
         # calculate side deltas
         if self.leftVel:
@@ -287,19 +272,12 @@ class DriveTrain(Subsystem):
         SD.putNumber('DifferencePos', differencePos)
         
         SD.putNumber('Angle', self.ahrs.getAngle())
-        SD.putNumber('Adjusted Angle', self.ahrs.getAngle())
-
-        SD.putNumber('Left Max Vel', self.leftMaxVel)
-        SD.putNumber('Right Max Vel', self.rightMaxVel)
-        
-        SD.putNumber('Left Min Vel', self.leftMinVel)
-        SD.putNumber('Right Min Vel', self.rightMinVel)
+        SD.putNumber('Angle Adjustment', self.ahrs.getAngleAdjustment())
 
         self.leftVel = leftVel
         self.leftPos = leftPos
         self.rightVel = rightVel
         self.rightPos = rightPos
-        
 
         # kP = self.driveLeftMaster.configGetParameter(
         #     self.driveLeftMaster.ParamEnum.eProfileParamSlot_P, 0, 10)
@@ -332,12 +310,15 @@ class DriveTrain(Subsystem):
         
     def setAngle(self, angle, tolerance):
         #self.tolerance = tolerance
-            
+        #self.calculateAdjustedSetpoint(angle)
         self.turnController.setSetpoint(angle)
-       
         
-        if (self.ahrs.getYaw() <= abs(angle + tolerance)) and (self.ahrs.getYaw() >= abs(angle - tolerance)):            
+
+        
+        if ((self.ahrs.getYaw() <= (angle + tolerance)) 
+            and (self.ahrs.getYaw() >= (angle - tolerance))):            
             self.turnController.disable()
+
             
             self.driveLeftMaster.set(0)
             self.driveRightMaster.set(0)
@@ -348,15 +329,31 @@ class DriveTrain(Subsystem):
             self.drive.arcadeDrive(0, self.output)
 
             
-
+        
             #self.leftTurnController.setSetpoint(angle)
-    
+
             
     def isInGyroPosition(self):
-        return ((self.ahrs.getYaw() - self.robot.autonomous.startingYaw) <= (self.turnController.getSetpoint() + self.robot.autonomous.ANGLE_TOLERANCE)) and ((self.ahrs.getYaw() - self.robot.autonomous.startingYaw) >= (self.turnController.getSetpoint() - self.robot.autonomous.ANGLE_TOLERANCE))
+      
+        return((self.ahrs.getYaw() <= (self.turnController.getSetpoint() + self.robot.autonomous.ANGLE_TOLERANCE)) and (self.ahrs.getYaw() >= (self.turnController.getSetpoint() - self.robot.autonomous.ANGLE_TOLERANCE)))
                    
+    def calculateAdjustedSetpoint(self, angle):
+        self.startingYaw = self.robot.autonomous.startingYaw
+        adjustedAngle = angle + self.startingYaw
+            
+        if adjustedAngle<-180:
+            undershot = adjustedAngle+180
+            adjustedAngle = 180+undershot
+            
+        elif adjustedAngle>180:
+            overshot = adjustedAngle-180
+            adjustedAngle = -180+overshot
+            
+        self.adjustedSetpoint = adjustedAngle
+                
+        
     def PID(self):
-        self.kP = 0.3
+        self.kP = .05
         self.kI = 0.00
         self.kD = 0.00
         self.kF = 0.00

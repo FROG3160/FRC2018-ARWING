@@ -23,13 +23,14 @@ class Climber(Subsystem):
             self.climbMotor.set(-0.75)
         else:
             self.climbMotor.set(0)
+        wpilib.SmartDashboard.putBoolean('Latch Switch', self.checkSwitch.get() == 1)
         
             
     def climbLatch(self):
         if self.driverOne.getRawButtonReleased(1):
             self.latchToggleCount += 1
             
-        if self.latchToggleCount%2 == 0:
+        if self.latchToggleCount%2 == 1:
             self.solenoid.set(self.solenoid.Value.kReverse)
         else:
             self.solenoid.set(self.solenoid.Value.kForward)
