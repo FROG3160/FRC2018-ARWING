@@ -39,14 +39,6 @@ class Robot(wpilib.IterativeRobot):
         
     
 
-        # TODO:  see examples/pacgoat/robot.py
-        # we need Classes defining autonomous commands to call for Forward
-        # and Reverse
-        #self.autoChooser = wpilib.SendableChooser()
-        #self.autoChooser.addDefault("Forward", Forward(self))
-        #self.autoChooser.addObject("Reverse", Reverse(self))
-        #wpilib.SmartDashboard.putData("Auto Mode", self.autoChooser)        
-
 
     def robotPeriodic(self):
         pass
@@ -60,52 +52,38 @@ class Robot(wpilib.IterativeRobot):
     def autonomousInit(self):
         """This function is run once each time the robot enters autonomous mode."""
         self.autonomous = Autonomous(self)
-        #self.autonomous.getGameData()
         self.autonomous.reset()
         self.drive.autoInit()
 
     def autonomousPeriodic(self):
         """This function is called periodically during autonomous."""
-
+        self.autonomous.testMove(self.autonomous.WALL_TO_SWITCH, -1, True)
+        #self.elevator.setElevatorPosition(self.elevator.kScale)
+       
+        #self.autonomous.start()
         #self.autonomous.run()
-        #self.autonomous.testMove(self.autonomous.magEncoderInchesToTicks(12*6), 10, True)
-        #self.autonomous.testAngle(-180, 10)
-        self.autonomous.run()
+        #self.elevator.setElevatorPosition(-20000)
+        
         self.autonomous.telemetry()
-
-        #nearswitch, scale, farswitch = list(self.fielddata)
-#         
-#         if nearswitch == 'R':
-#             self.drive.arcade(.5, .2)
-#         else:
-#             self.drive.arcade(.5, -.2)
-
+        
     def teleopInit(self):
         self.drive.teleInit()
 
     def teleopPeriodic(self):
         """This function is called periodically during operator control."""
-        speed = self.dStick.getY() * -1
-        rotation = self.dStick.getTwist()
+        speed = (self.dStick.getY() * -1)**3
+        rotation = self.dStick.getTwist()/(1.1+self.dStick.getRawAxis(3))
         # self.drive.moveSpeed(speed, speed)
-
-        if self.isSimulation():
-            self.drive.arcade(speed, rotation)
-        else:
-            self.drive.arcadeWithRPM(speed, rotation, 2800)
-            
+         
+        self.drive.arcadeWithRPM(speed, rotation, 2800)
+          
         self.cubeGrabber.grabberFunction()
 #          
         self.elevator.elevatorFunction()
         self.elevator.telemetry()
           
         self.climber.climberFunction()
-
-        # TODO:  need something like this in commands that autonomous or teleop 
-        # would run to make sure an exception doesn't crash the code during
-        # competition.
-        #raise ValueError("Checking to see what happens when we get an exception")
-
+        
 
 
     def testInit(self):

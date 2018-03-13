@@ -5,9 +5,9 @@ import wpilib
 
 class Elevator(Subsystem):
     
-    kSwitch = 1000
-    kScale = 3000
-    kStart = 500
+    kSwitch = -20000
+    kScale = -50000
+    kStart = -5000
     kBottom = 0
     
     
@@ -20,32 +20,33 @@ class Elevator(Subsystem):
         
         self.elevator.configSelectedFeedbackSensor(
         ctre.talonsrx.TalonSRX.FeedbackDevice.CTRE_MagEncoder_Relative, 0, 0)
+        self.elevator.setSensorPhase(True)
+        self.elevator.setSelectedSensorPosition(0, 0, 0)
         
-        self.elevator.configPeakOutputForward(1, 0)
-        self.elevator.configPeakOutputReverse(-0.25, 0)
+        self.elevator.configPeakOutputForward(.25, 0)
+        self.elevator.configPeakOutputReverse(-1, 0)
         self.elevator.configNominalOutputForward(0, 0)        
         self.elevator.configNominalOutputReverse(0, 0)
         
-        self.elevator.config_kP(0, 3, 0)
         
         self.elevator.setSafetyEnabled(False)
         
         super().__init__()
         
     def elevatorFunction(self):
-        if self.elevator.isRevLimitSwitchClosed():
-            self.elevator.setPulseWidthPosition(0, 0)
+#         if self.elevator.isRevLimitSwitchClosed():
+#             self.elevator.setSelectedSensorPosition(0, 0, 0)
               
-        self.elevator.set(-self.driverTwo.getRawAxis(1))
+        self.elevator.set(self.driverTwo.getRawAxis(1))
         wpilib.SmartDashboard.putNumber('elevator amperage', self.elevator.getOutputCurrent())
     
 #     def updateSD(self):
         
     
     def setElevatorPosition(self, position):
-        if self.elevator.isRevLimitSwitchClosed():
-            self.elevator.setSelectedSensorPosition(0, 0, 0)
-            
+#         if self.elevator.isRevLimitSwitchClosed():
+#             self.elevator.setSelectedSensorPosition(0, 0, 0)
+#             
         self.elevator.set(ctre.talonsrx.TalonSRX.ControlMode.Position, position)
         
     def calibrateBottomAutonomous(self):
@@ -59,8 +60,10 @@ class Elevator(Subsystem):
 #             self.calibrateStep = 0
             
     def getBottomLimit(self):
-        return self.elevator.isRevLimitSwitchClosed()
+        return self.elevator.isFwdLimitSwitchClosed()
      
     def telemetry(self):
-        wpilib.SmartDashboard.putNumber('Lift Position', self.elevator.getSelectedSensorPosition(0))        
+        wpilib.SmartDashboard.putNumber('Lift Position', self.elevator.getSelectedSensorPosition(0))   
+        wpilib.SmartDashboard.putBoolean('Forward Limit', self.elevator.isFwdLimitSwitchClosed())    
+        wpilib.SmartDashboard.putBoolean('Reverse Limit', self.elevator.isRevLimitSwitchClosed())  
         
