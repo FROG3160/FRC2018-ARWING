@@ -57,11 +57,12 @@ class Robot(wpilib.IterativeRobot):
 
     def autonomousPeriodic(self):
         """This function is called periodically during autonomous."""
-        self.autonomous.testMove(self.autonomous.WALL_TO_SWITCH, -1, True)
+        #self.autonomous.testMove(36, -1, False)
+        #self.autonomous.testAngle(-90, -1)
         #self.elevator.setElevatorPosition(self.elevator.kScale)
        
         #self.autonomous.start()
-        #self.autonomous.run()
+        self.autonomous.run()
         #self.elevator.setElevatorPosition(-20000)
         
         self.autonomous.telemetry()
