@@ -14,6 +14,9 @@ class Climber(Subsystem):
         
         self.latchToggleCount = 2
         
+        self.climbMotor.configPeakOutputForward(1, 0)
+        self.climbMotor.configPeakOutputReverse(-1, 0)
+        
     def climberFunction(self):
         self.climbLatch()
         

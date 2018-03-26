@@ -31,13 +31,17 @@ class Elevator(Subsystem):
         
         self.elevator.setSafetyEnabled(False)
         
+        self.smartToggle = False
+        self.smartPosition = 0
+        
         super().__init__()
         
     def elevatorFunction(self):
 #         if self.elevator.isRevLimitSwitchClosed():
 #             self.elevator.setSelectedSensorPosition(0, 0, 0)
               
-        self.elevator.set(self.driverTwo.getRawAxis(1))
+        #self.elevator.set(self.driverTwo.getRawAxis(1))
+        self.smartPositioning()
         wpilib.SmartDashboard.putNumber('elevator amperage', self.elevator.getOutputCurrent())
     
 #     def updateSD(self):
@@ -49,6 +53,42 @@ class Elevator(Subsystem):
 #             
         self.elevator.set(ctre.talonsrx.TalonSRX.ControlMode.Position, position)
         
+    def smartPositioning(self):
+        
+        if self.driverTwo.getRawButtonReleased(5):
+            self.smartPosition -= 1
+            self.smartToggle = True
+            
+            if self.smartPosition < 0:
+                self.smartPosition = 0
+                
+        elif self.driverTwo.getRawButtonReleased(6):
+            self.smartPosition += 1
+            self.smartToggle = True
+            
+            if self.smartPosition > 2:
+                self.smartPosition = 2
+                
+        elif (self.driverTwo.getRawAxis(1) > 0.2) or (self.driverTwo.getRawAxis(1) < -0.2):
+            self.smartToggle = False
+                
+        if self.smartToggle:
+            if self.smartPosition == 2:
+                self.setElevatorPosition(self.kScale)
+            elif self.smartPosition == 1:
+                self.setElevatorPosition(self.kSwitch)
+            elif self.smartPosition == 0:
+                self.elevator.set(0)
+        else:
+            self.elevator.set(self.driverTwo.getRawAxis(1))
+            
+            if self.elevator.getSelectedSensorPosition(0) < (self.kSwitch + self.kScale)/2:
+                self.smartPosition = 2
+            elif self.elevator.getSelectedSensorPosition(0) < self.kSwitch/2:
+                self.smartPosition = 1
+            else:
+                self.smartPosition = 0
+             
     def calibrateBottomAutonomous(self):
         
         if self.elevator.isRevLimitSwitchClosed():
@@ -56,8 +96,7 @@ class Elevator(Subsystem):
             self.elevator.set(0)
 #             self.calibrateStep = 1
         else:
-            self.elevator.set(-.5)
-#             self.calibrateStep = 0
+            self.elevator.set(-.5)   
             
     def getBottomLimit(self):
         return self.elevator.isFwdLimitSwitchClosed()

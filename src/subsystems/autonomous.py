@@ -8,7 +8,7 @@ class Autonomous(Subsystem):
         self.robot = robot
 
 #         self.autoInstructionsFile = open("subsystems/AutoInstructions.txt", "r")
-        self.autoInstructions = [0, 'R']
+        self.autoInstructions = [0, 'L']
 #         self.autoInstructions[index].strip()
 #         self.autoInstructionsFile.close()
         
@@ -20,10 +20,10 @@ class Autonomous(Subsystem):
         
         self.elevator = self.robot.elevator.elevator
         
-        self.leftGrab = self.robot.cubeGrabber.leftArm
-        self.rightGrab = self.robot.cubeGrabber.rightArm
+        self.grabber = self.robot.cubeGrabber.armMotor
         
         self.resetGyro()
+        self.reset()
         
         self.autoStep = 0
         self.chunkStep = 0 
@@ -39,7 +39,7 @@ class Autonomous(Subsystem):
     def magEncoderInchesToTicks(self, inches):
         RADIUS_OF_WHEEL = 3
         CIRCUMFERENCE_OF_WHEEL = RADIUS_OF_WHEEL*2*math.pi
-        TICKS_PER_REVOLUTION = 4096
+        TICKS_PER_REVOLUTION = 4060
         
         rotations = inches/CIRCUMFERENCE_OF_WHEEL
         
@@ -50,19 +50,19 @@ class Autonomous(Subsystem):
         return self.ticks
         
     def distanceVariables(self):
-        self.ANGLE_TOLERANCE = 3
+        self.ANGLE_TOLERANCE = 2
                
-        self.WALL_TO_SWITCH = 150
-        self.SWITCH_TO_PLATFORM_ALLEY = 65
-        self.PLATFORM_ALLEY_TO_SCALE = 52
+        self.WALL_TO_SWITCH = 176.75
+        self.SWITCH_TO_PLATFORM_ALLEY = 57.5
+        self.PLATFORM_ALLEY_TO_SCALE = 22.25
         self.WALL_TO_STRAIGHT_SWITCH = 60
         self.ALLEY_TO_CUBE = 18
-        self.ALLEY_TO_ALLEY = 210
+        self.ALLEY_TO_ALLEY = 163.5
         self.CUBE_TO_SWITCH = 12
         
-        self.MIDDLE_START_DISTANCE = 12
-        self.MIDDLE_START_TO_SWITCH = 70
-        self.MIDDLE_TO_SWITCH = 24
+        self.MIDDLE_START_DISTANCE = 30
+        self.MIDDLE_START_TO_SWITCH = 75
+        self.MIDDLE_TO_SWITCH = 40
         self.MIDDLE_TO_SWITCH_ANGLE = 45
         
         #324
@@ -84,8 +84,8 @@ class Autonomous(Subsystem):
         
     def getGameData(self):
         self.gamedata = wpilib.DriverStation.getInstance().getGameSpecificMessage()
-        self.delayTime = wpilib.SmartDashboard.getNumber('Delay(sec)', 0)
-        self.startLocation = wpilib.SmartDashboard.getString('Starting Position(L, R, M)', 'L')
+#         self.delayTime = wpilib.SmartDashboard.getNumber('Delay(sec)', 0)
+#         self.startLocation = wpilib.SmartDashboard.getString('Starting Position(L, R, M)', 'L')
         
     def run(self):
         self.telemetry()
@@ -133,9 +133,10 @@ class Autonomous(Subsystem):
         elif self.chunkStep == 1:
             self.autoAngle(self.SWITCH_DUMP_ANGLE, self.ANGLE_TOLERANCE, self.robot.elevator.kSwitch)
         elif self.chunkStep == 2:
+            self.autoMove(6, self.robot.elevator.kSwitch, False)
+        elif self.chunkStep == 3:
             self.dropCube()
-#         elif self.chunkStep == 3:
-#             self.autoAngle(0, self.ANGLE_TOLERANCE, -1)
+
 #         elif self.chunkStep == 4:
 #             self.autoMove(self.SWITCH_TO_PLATFORM_ALLEY, self.robot.elevator.kBottom, False)
 #         elif self.chunkStep == 5:
@@ -304,6 +305,9 @@ class Autonomous(Subsystem):
             self.reset()
     
     def autoMove(self, distanceIN, elevatorPosition, isAutoPickUp):
+        elevatorPosition = -1
+        wpilib.SmartDashboard.putNumber('Current Distance Target', self.magEncoderInchesToTicks(distanceIN))
+        
         self.robot.drive.moveToPosition(self.magEncoderInchesToTicks(distanceIN))
         
         if elevatorPosition == -1:
@@ -328,6 +332,9 @@ class Autonomous(Subsystem):
                 self.chunkStep += 1
       
     def autoAngle(self, angle, tolerance, elevatorPosition):
+        elevatorPosition = -1
+        wpilib.SmartDashboard.putNumber('Current Angle Target', angle)
+
         
         self.robot.drive.setAngle(angle, tolerance) 
         
@@ -355,8 +362,7 @@ class Autonomous(Subsystem):
      
     def dropCube(self):
         self.reset()
-        self.leftGrab.set(1)
-        self.rightGrab.set(-1)
+        self.grabber.set(1)
         
         wpilib.Timer.delay(1)
         
@@ -373,9 +379,7 @@ class Autonomous(Subsystem):
         self.elevator.set(0)
         self.driveLeft.set(0)
         self.driveRight.set(0)
-        self.leftGrab.set(0)
-        self.rightGrab.set(0)
-        
+        self.grabber.set(0)        
         
         self.robot.cubeGrabber.armSolenoid.set(self.robot.cubeGrabber.armClosePosition)
         
@@ -402,7 +406,7 @@ class Autonomous(Subsystem):
             self.reset()
                 
     def telemetry(self):
-
+        
         wpilib.SmartDashboard.putNumber('Auto Step', self.autoStep)
         wpilib.SmartDashboard.putNumber('Chunk Step', self.chunkStep)
         wpilib.SmartDashboard.putNumber('Delay Time', self.delayTime)
