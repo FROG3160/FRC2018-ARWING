@@ -165,7 +165,7 @@ class DriveTrain(Subsystem):
         self.drive.stopMotor()
 
     def arcade(self, speed, rotation):
-        self.updateSD()
+#         self.updateSD()
         
         if self.robot.dStick.getRawButtonReleased(3):
             self.robotFrontToggleCount += 1
@@ -181,7 +181,7 @@ class DriveTrain(Subsystem):
             self.drive.arcadeDrive(-speed, rotation, True)
             
     def arcadeWithRPM(self, speed, rotation, maxRPM):
-        self.updateSD()
+#         self.updateSD()
         self.driveLeftMaster.setSafetyEnabled(False)
         
         if self.robot.dStick.getRawButtonReleased(3):

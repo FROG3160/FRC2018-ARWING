@@ -70,8 +70,8 @@ class cubeGrabber(Subsystem):
         """
         These send information over to the SmartDashboard
         """
-        wpilib.SmartDashboard.putNumber("cubeGrabber Ultra Sonic", self.cubeDistanceIn)
-        wpilib.SmartDashboard.putNumber("cubeGrabber Limit Switch", self.armSwitch.get())
+#         wpilib.SmartDashboard.putNumber("cubeGrabber Ultra Sonic", self.cubeDistanceIn)
+#         wpilib.SmartDashboard.putNumber("cubeGrabber Limit Switch", self.armSwitch.get())
         
     """
     Code for resetting the Cube cubeGrabber

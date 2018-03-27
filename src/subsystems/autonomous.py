@@ -1,6 +1,8 @@
 from wpilib.command.subsystem import Subsystem
 import wpilib
 import math
+from wpilib.sendablechooser import SendableChooser
+from wpilib.smartdashboard import SmartDashboard
 
 class Autonomous(Subsystem):
     
@@ -30,11 +32,15 @@ class Autonomous(Subsystem):
         self.startLocation = self.autoInstructions[1]
         self.delayTime = self.autoInstructions[0]
         
+        
+        
         self.getGameData()
         
         self.distanceVariables()
         
         
+        
+
 
     def magEncoderInchesToTicks(self, inches):
         RADIUS_OF_WHEEL = 3
@@ -84,11 +90,13 @@ class Autonomous(Subsystem):
         
     def getGameData(self):
         self.gamedata = wpilib.DriverStation.getInstance().getGameSpecificMessage()
+        self.startLocation = self.robot.startingChooser.getSelected()
+        self.delayTime = self.robot.startingDelayChooser.getSelected()
 #         self.delayTime = wpilib.SmartDashboard.getNumber('Delay(sec)', 0)
 #         self.startLocation = wpilib.SmartDashboard.getString('Starting Position(L, R, M)', 'L')
         
     def run(self):
-        self.telemetry()
+        #self.telemetry()
         
         if self.autoStep == 0:
             self.getGameData()
@@ -306,7 +314,7 @@ class Autonomous(Subsystem):
     
     def autoMove(self, distanceIN, elevatorPosition, isAutoPickUp):
         elevatorPosition = -1
-        wpilib.SmartDashboard.putNumber('Current Distance Target', self.magEncoderInchesToTicks(distanceIN))
+        #wpilib.SmartDashboard.putNumber('Current Distance Target', self.magEncoderInchesToTicks(distanceIN))
         
         self.robot.drive.moveToPosition(self.magEncoderInchesToTicks(distanceIN))
         
@@ -333,7 +341,7 @@ class Autonomous(Subsystem):
       
     def autoAngle(self, angle, tolerance, elevatorPosition):
         elevatorPosition = -1
-        wpilib.SmartDashboard.putNumber('Current Angle Target', angle)
+        #wpilib.SmartDashboard.putNumber('Current Angle Target', angle)
 
         
         self.robot.drive.setAngle(angle, tolerance) 
@@ -415,5 +423,3 @@ class Autonomous(Subsystem):
         wpilib.SmartDashboard.putNumber('Angle', self.robot.drive.ahrs.getAngle())
         wpilib.SmartDashboard.putNumber('Left Position', self.driveLeft.getSelectedSensorPosition(0))
         wpilib.SmartDashboard.putNumber('Right Position', self.driveRight.getSelectedSensorPosition(0))
-        wpilib.SmartDashboard.putNumber('Starting Angle', self.startingYaw)
-        wpilib.SmartDashboard.putNumber('Adjusted Angle', self.startingYaw + self.robot.drive.ahrs.getYaw())

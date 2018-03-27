@@ -42,7 +42,7 @@ class Elevator(Subsystem):
               
         #self.elevator.set(self.driverTwo.getRawAxis(1))
         self.smartPositioning()
-        wpilib.SmartDashboard.putNumber('elevator amperage', self.elevator.getOutputCurrent())
+        #wpilib.SmartDashboard.putNumber('elevator amperage', self.elevator.getOutputCurrent())
     
 #     def updateSD(self):
         
