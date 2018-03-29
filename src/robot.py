@@ -11,6 +11,7 @@ from subsystems.grabber import cubeGrabber
 from subsystems.elevator import Elevator
 from subsystems.climber import Climber
 from subsystems.autonomous import Autonomous
+from wpilib.sendablechooser import SendableChooser
 # from robotpy_ext.common_drivers.navx import AHRS
 
 
@@ -35,6 +36,8 @@ class Robot(wpilib.IterativeRobot):
         self.elevator = Elevator(self)
         self.climber = Climber(self)
         
+        self.sendableChooser()
+        
         
         
     
@@ -57,14 +60,15 @@ class Robot(wpilib.IterativeRobot):
 
     def autonomousPeriodic(self):
         """This function is called periodically during autonomous."""
-        self.autonomous.testMove(self.autonomous.WALL_TO_SWITCH, -1, True)
+        #self.autonomous.testMove(36, -1, False)
+        #self.autonomous.testAngle(-90, -1)
         #self.elevator.setElevatorPosition(self.elevator.kScale)
        
         #self.autonomous.start()
-        #self.autonomous.run()
+        self.autonomous.run()
         #self.elevator.setElevatorPosition(-20000)
         
-        self.autonomous.telemetry()
+        #self.autonomous.telemetry()
         
     def teleopInit(self):
         self.drive.teleInit()
@@ -80,7 +84,7 @@ class Robot(wpilib.IterativeRobot):
         self.cubeGrabber.grabberFunction()
 #          
         self.elevator.elevatorFunction()
-        self.elevator.telemetry()
+        #self.elevator.telemetry()
           
         self.climber.climberFunction()
         
@@ -93,7 +97,34 @@ class Robot(wpilib.IterativeRobot):
         wpilib.LiveWindow.setEnabled(True)
         pass
     
-
+    def sendableChooser(self):
+        self.startingChooser = SendableChooser()
+        self.startingChooser.addDefault('Move Forward Only', '!')
+        self.startingChooser.addObject('Starting Left', 'L')
+        self.startingChooser.addObject('Starting Middle', 'M')
+        self.startingChooser.addObject('Starting Right', 'R')
+        
+        wpilib.SmartDashboard.putData('Starting Side', self.startingChooser)
+        
+        self.startingDelayChooser = SendableChooser()
+        self.startingDelayChooser.addDefault('0', 0)
+        self.startingDelayChooser.addObject('1', 1)
+        self.startingDelayChooser.addObject('2', 2)
+        self.startingDelayChooser.addObject('3', 3)
+        self.startingDelayChooser.addObject('4', 4)
+        self.startingDelayChooser.addObject('5', 5)
+        self.startingDelayChooser.addObject('6', 6)
+        self.startingDelayChooser.addObject('7', 7)
+        self.startingDelayChooser.addObject('8', 8)
+        self.startingDelayChooser.addObject('9', 9)
+        self.startingDelayChooser.addObject('10', 10)
+        self.startingDelayChooser.addObject('11', 11)
+        self.startingDelayChooser.addObject('12', 12)
+        self.startingDelayChooser.addObject('13', 13)
+        self.startingDelayChooser.addObject('14', 14)
+        self.startingDelayChooser.addObject('15', 15)
+        
+        wpilib.SmartDashboard.putData('Delay Time(sec)', self.startingDelayChooser)
 
 if __name__ == "__main__":
     wpilib.run(Robot)

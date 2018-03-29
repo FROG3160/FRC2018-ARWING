@@ -120,15 +120,18 @@ class DriveTrain(Subsystem):
         super().__init__()
         
     def autoInit(self):
-        self.speed = .5
+        self.speed = .45
         self.driveLeftMaster.configPeakOutputForward(self.speed, 0)
         self.driveLeftMaster.configPeakOutputReverse(-self.speed, 0)
         
         self.driveRightMaster.configPeakOutputForward(self.speed, 0)
         self.driveRightMaster.configPeakOutputReverse(-self.speed, 0) 
         
-        self.driveLeftMaster.config_kP(0, .055, 0)
-        self.driveRightMaster.config_kP(0, .055, 0)
+#         self.driveLeftMaster.config_kP(0, .055, 0)
+#         self.driveRightMaster.config_kP(0, .055, 0)
+        
+        self.driveLeftMaster.config_kP(0, .185, 0)
+        self.driveRightMaster.config_kP(0, .185, 0)
 
 #         self.driveLeftMaster.config_kP(0, 20, 0)
 #         self.driveRightMaster.config_kP(0, 20, 0)
@@ -153,7 +156,7 @@ class DriveTrain(Subsystem):
         self.driveLeftMaster.config_kF(0, 0.313, 0)
         self.driveRightMaster.config_kF(0, 0.313, 0)
 
-    def moveToPosition(self, position, side='left'):
+    def moveToPosition(self, position):
         self.driveLeftMaster.set(ctre.talonsrx.TalonSRX.ControlMode.Position, position)
         
         self.driveRightMaster.set(ctre.talonsrx.TalonSRX.ControlMode.Position, position)
@@ -162,7 +165,7 @@ class DriveTrain(Subsystem):
         self.drive.stopMotor()
 
     def arcade(self, speed, rotation):
-        self.updateSD()
+#         self.updateSD()
         
         if self.robot.dStick.getRawButtonReleased(3):
             self.robotFrontToggleCount += 1
@@ -178,7 +181,7 @@ class DriveTrain(Subsystem):
             self.drive.arcadeDrive(-speed, rotation, True)
             
     def arcadeWithRPM(self, speed, rotation, maxRPM):
-        self.updateSD()
+#         self.updateSD()
         self.driveLeftMaster.setSafetyEnabled(False)
         
         if self.robot.dStick.getRawButtonReleased(3):
@@ -334,7 +337,8 @@ class DriveTrain(Subsystem):
 
             
     def isInGyroPosition(self):
-      
+        SD.putNumber('Is in gyro position', ((self.ahrs.getYaw() <= (self.turnController.getSetpoint() + self.robot.autonomous.ANGLE_TOLERANCE)) and (self.ahrs.getYaw() >= (self.turnController.getSetpoint() - self.robot.autonomous.ANGLE_TOLERANCE)))
+)
         return((self.ahrs.getYaw() <= (self.turnController.getSetpoint() + self.robot.autonomous.ANGLE_TOLERANCE)) and (self.ahrs.getYaw() >= (self.turnController.getSetpoint() - self.robot.autonomous.ANGLE_TOLERANCE)))
                    
     def calculateAdjustedSetpoint(self, angle):
@@ -353,7 +357,7 @@ class DriveTrain(Subsystem):
                 
         
     def PID(self):
-        self.kP = .05
+        self.kP = .06
         self.kI = 0.00
         self.kD = 0.00
         self.kF = 0.00
@@ -362,7 +366,7 @@ class DriveTrain(Subsystem):
         
                 
         self.turnController.setInputRange(-180, 180)
-        self.turnController.setOutputRange(-0.5, 0.5)
+        self.turnController.setOutputRange(-0.6, 0.6)
 
         
         self.turnController.disable()
