@@ -26,14 +26,23 @@ class Climber(Subsystem):
         self.climbLatch()
         
         if self.driverOne.getPOV() == 0:
-            self.lightsHandler(2)
+            if self.getCheckSwitch():
+                self.lightsHandler(2)
+            else:
+                self.lightsHandler(1)
             self.climbMotor.set(0.75)
             
         elif self.driverOne.getPOV() == 180:
-            self.lightsHandler(1)
+            if self.getCheckSwitch():
+                self.lightsHandler(2)
+            else:
+                self.lightsHandler(1)
             self.climbMotor.set(-0.75)
         else:
+            if self.getCheckSwitch():
+                self.lightsHandler(2)
             self.climbMotor.set(0)
+            
         wpilib.SmartDashboard.putBoolean('Latch Switch', self.checkSwitch.get() == 1)
         
             
@@ -46,18 +55,18 @@ class Climber(Subsystem):
             self.solenoid.set(self.solenoid.Value.kForward)
             
     def getCheckSwitch(self):
-        return self.checkSwitch.get()
-        if self.checkSwitch.get():
-            self.lightsHandler(2)
+        return not self.checkSwitch.get()
+        if not self.checkSwitch.get():
+            self.lightsHandler(1)
             
     def lightsHandler(self, tempHandlerState):
 
             
         if tempHandlerState != self.handlerState:
             if tempHandlerState == 1:
-                self.lights.sendOKToClimb()
-            elif tempHandlerState == 2:
                 self.lights.sendDontClimb()
+            elif tempHandlerState == 2:
+                self.lights.sendOKToClimb()
             self.handlerState = tempHandlerState
         
         

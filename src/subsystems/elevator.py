@@ -23,16 +23,16 @@ class Elevator(Subsystem):
         self.elevator.setSensorPhase(True)
         self.elevator.setSelectedSensorPosition(0, 0, 0)
         
-        self.elevator.configPeakOutputForward(.25, 0)
-        self.elevator.configPeakOutputReverse(-1, 0)
+        self.elevator.configPeakOutputForward(.2, 0)
+        self.elevator.configPeakOutputReverse(-.95, 0)
         self.elevator.configNominalOutputForward(0, 0)        
         self.elevator.configNominalOutputReverse(0, 0)
         
         
         self.elevator.setSafetyEnabled(False)
         
-        self.smartToggle = False
-        self.smartPosition = 0
+        self.smartToggle = True
+        self.smartPosition = 1
         
         super().__init__()
         

@@ -54,6 +54,9 @@ class DriveTrain(Subsystem):
         self.driveRightMaster.configPeakOutputForward(self.speed, 0)
         self.driveRightMaster.configPeakOutputReverse(-self.speed, 0)
         
+        self.driveLeftMaster.configClosedLoopRamp(.2, 0)
+        self.driveRightMaster.configClosedLoopRamp(.2, 0)
+        
 
 
         self.driveLeftMaster.setSafetyEnabled(False)
@@ -120,18 +123,20 @@ class DriveTrain(Subsystem):
         super().__init__()
         
     def autoInit(self):
-        self.speed = .45
+        self.speed = .5
         self.driveLeftMaster.configPeakOutputForward(self.speed, 0)
         self.driveLeftMaster.configPeakOutputReverse(-self.speed, 0)
         
         self.driveRightMaster.configPeakOutputForward(self.speed, 0)
         self.driveRightMaster.configPeakOutputReverse(-self.speed, 0) 
         
-#         self.driveLeftMaster.config_kP(0, .055, 0)
-#         self.driveRightMaster.config_kP(0, .055, 0)
+        self.driveLeftMaster.config_kP(0, .115, 0)
+        self.driveRightMaster.config_kP(0, .115, 0)
         
-        self.driveLeftMaster.config_kP(0, .185, 0)
-        self.driveRightMaster.config_kP(0, .185, 0)
+       
+        
+#         self.driveLeftMaster.config_kP(0, .185, 0)
+#         self.driveRightMaster.config_kP(0, .185, 0)
 
 #         self.driveLeftMaster.config_kP(0, 20, 0)
 #         self.driveRightMaster.config_kP(0, 20, 0)
@@ -142,7 +147,7 @@ class DriveTrain(Subsystem):
   
         
     def teleInit(self):
-        self.speed = .6
+        self.speed = .55
         self.driveLeftMaster.configPeakOutputForward(self.speed, 0)
         self.driveLeftMaster.configPeakOutputReverse(-self.speed, 0)
         
@@ -357,7 +362,7 @@ class DriveTrain(Subsystem):
                 
         
     def PID(self):
-        self.kP = .06
+        self.kP = .045
         self.kI = 0.00
         self.kD = 0.00
         self.kF = 0.00
@@ -366,7 +371,7 @@ class DriveTrain(Subsystem):
         
                 
         self.turnController.setInputRange(-180, 180)
-        self.turnController.setOutputRange(-0.6, 0.6)
+        self.turnController.setOutputRange(-0.55, 0.55)
 
         
         self.turnController.disable()
