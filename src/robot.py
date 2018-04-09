@@ -48,7 +48,7 @@ class Robot(wpilib.IterativeRobot):
 
     def disabledInit(self):
         pass
-
+    
     def disabledPeriodic(self):
         self.drive.stop()
 
@@ -60,7 +60,7 @@ class Robot(wpilib.IterativeRobot):
 
     def autonomousPeriodic(self):
         """This function is called periodically during autonomous."""
-        #self.autonomous.testMove(36, -1, False)
+        #self.autonomous.testMove(self.autonomous.WALL_TO_SCALE, -1, False)
         #self.autonomous.testAngle(-90, -1)
         #self.elevator.setElevatorPosition(self.elevator.kScale)
        
@@ -97,6 +97,8 @@ class Robot(wpilib.IterativeRobot):
         wpilib.LiveWindow.setEnabled(True)
         pass
     
+
+    
     def sendableChooser(self):
         self.startingChooser = SendableChooser()
         self.startingChooser.addDefault('Move Forward Only', '!')
@@ -125,6 +127,12 @@ class Robot(wpilib.IterativeRobot):
         self.startingDelayChooser.addObject('15', 15)
         
         wpilib.SmartDashboard.putData('Delay Time(sec)', self.startingDelayChooser)
+        
+        self.switchOrScale = SendableChooser()
+        self.switchOrScale.addDefault('Switch', 'Switch')
+        self.switchOrScale.addObject('Scale', 'Scale')
+        
+        wpilib.SmartDashboard.putData('Switch or Scale', self.switchOrScale)
 
 if __name__ == "__main__":
     wpilib.run(Robot)
