@@ -33,7 +33,7 @@ class Autonomous(Subsystem):
         self.delayTime = self.autoInstructions[0]
         
         
-        
+        self.robot.sendableChooser()
         self.getGameData()
         
         self.distanceVariables()
@@ -56,11 +56,11 @@ class Autonomous(Subsystem):
         return self.ticks
         
     def distanceVariables(self):
-        self.ANGLE_TOLERANCE = 2
+        self.ANGLE_TOLERANCE = 8
                
-        self.WALL_TO_SWITCH = 176.75
-        self.SWITCH_TO_PLATFORM_ALLEY = 57.5
-        self.PLATFORM_ALLEY_TO_SCALE = 22.25
+        self.WALL_TO_SWITCH = 156.75
+        self.SWITCH_TO_PLATFORM_ALLEY = 77.5
+        self.PLATFORM_ALLEY_TO_SCALE = 18.25
         self.WALL_TO_STRAIGHT_SWITCH = 60
         self.ALLEY_TO_CUBE = 18
         self.ALLEY_TO_ALLEY = 163.5
@@ -92,12 +92,14 @@ class Autonomous(Subsystem):
         self.gamedata = wpilib.DriverStation.getInstance().getGameSpecificMessage()
         self.startLocation = self.robot.startingChooser.getSelected()
         self.delayTime = self.robot.startingDelayChooser.getSelected()
+        self.switchOrScale = self.robot.switchOrScale.getSelected()
 #         self.delayTime = wpilib.SmartDashboard.getNumber('Delay(sec)', 0)
 #         self.startLocation = wpilib.SmartDashboard.getString('Starting Position(L, R, M)', 'L')
         
     def run(self):
-        #self.telemetry()
-        
+        self.telemetry()
+        wpilib.SmartDashboard.putNumber('Chunk Step', self.chunkStep)
+
         if self.autoStep == 0:
             self.getGameData()
             self.start()
@@ -105,6 +107,8 @@ class Autonomous(Subsystem):
             self.delay(self.delayTime)
         elif self.autoStep == 2:
             self.autoChooser()
+        else:
+            self.robot.elevator.setElevatorPosition(self.robot.elevator.kSwitch)
             
 
     def start(self):
@@ -126,9 +130,12 @@ class Autonomous(Subsystem):
         elif (self.gamedata == "RLR" and self.startLocation == "L") or (self.gamedata == "LRL" and self.startLocation == "R"):
             self.differentSame()
         elif (self.gamedata == "LLL" and self.startLocation == "L") or (self.gamedata == "RRR" and self.startLocation == "R"):
-            self.sameSame()
+            if self.switchOrScale == 'Switch':
+                self.sameDifferent()
+            else:
+                self.differentSame()
         elif (self.gamedata == "RRR" and self.startLocation == "L") or (self.gamedata == "LLL" and self.startLocation == "R"):
-            self.differentDifferent()
+            self.driveForwardOnly()
         elif self.startLocation == 'M':
             self.straightSwitch()
         else:
@@ -140,10 +147,10 @@ class Autonomous(Subsystem):
             self.autoMove(self.WALL_TO_SWITCH, self.robot.elevator.kSwitch, False)
         elif self.chunkStep == 1:
             self.autoAngle(self.SWITCH_DUMP_ANGLE, self.ANGLE_TOLERANCE, self.robot.elevator.kSwitch)
+#         elif self.chunkStep == 2:
+#             self.autoMove(16, self.robot.elevator.kSwitch, False)
         elif self.chunkStep == 2:
-            self.autoMove(6, self.robot.elevator.kSwitch, False)
-        elif self.chunkStep == 3:
-            self.dropCube()
+            self.dropCube(self.robot.elevator.kSwitch)
 
 #         elif self.chunkStep == 4:
 #             self.autoMove(self.SWITCH_TO_PLATFORM_ALLEY, self.robot.elevator.kBottom, False)
@@ -185,6 +192,7 @@ class Autonomous(Subsystem):
 #             self.dropCube()
         else:
             self.reset()
+            self.autoStep += 1
             
     def differentSame(self):
         if self.chunkStep == 0:
@@ -192,7 +200,7 @@ class Autonomous(Subsystem):
         elif self.chunkStep == 1:
             self.autoAngle(self.SCALE_DUMP_ANGLE, self.ANGLE_TOLERANCE, self.robot.elevator.kScale)
         elif self.chunkStep == 2:
-            self.dropCube()
+            self.dropCube(self.robot.elevator.kScale)
         elif self.chunkStep == 3:
             self.autoAngle(0, self.ANGLE_TOLERANCE, self.robot.elevator.kScale)
         elif self.chunkStep == 4:
@@ -231,6 +239,7 @@ class Autonomous(Subsystem):
 #             self.dropCube()
         else:
             self.reset()
+            self.autoStep += 1
             
     def sameSame(self):
         if self.chunkStep == 0:
@@ -238,7 +247,7 @@ class Autonomous(Subsystem):
         elif self.chunkStep == 1:
             self.autoAngle(self.SCALE_DUMP_ANGLE, self.ANGLE_TOLERANCE, self.robot.elevator.kScale)
         elif self.chunkStep == 2:
-            self.dropCube()
+            self.dropCube(self.robot.elevator.kScale)
         elif self.chunkStep == 3:
             self.autoAngle(0, self.ANGLE_TOLERANCE, self.robot.elevator.kScale)
         elif self.chunkStep == 4:
@@ -252,9 +261,10 @@ class Autonomous(Subsystem):
         elif self.chunkStep == 8:
             self.autoMove(self.CUBE_TO_SWITCH, self.robot.elevator.kSwitch, False)
         elif self.chunkStep == 9:
-            self.dropCube()
+            self.dropCube(self.robot.elevator.kSwitch)
         else:
             self.reset()
+            self.autoStep += 1
          
     def differentDifferent(self):
         if self.chunkStep == 0:
@@ -270,7 +280,7 @@ class Autonomous(Subsystem):
         elif self.chunkStep == 5:
             self.autoAngle(-self.SCALE_DUMP_ANGLE, self.ANGLE_TOLERANCE, self.robot.elevator.kScale)
         elif self.chunkStep == 6:
-            self.dropCube()
+            self.dropCube(self.robot.elevator.kScale)
         elif self.chunkStep == 7:
             self.autoAngle(0, self.ANGLE_TOLERANCE, self.robot.elevator.kScale)
         elif self.chunkStep == 8:
@@ -287,34 +297,40 @@ class Autonomous(Subsystem):
 #             self.dropCube()
         else:
             self.reset()
+            self.autoStep += 1
         
     def straightSwitch(self):
         if self.chunkStep == 0:
-            self.autoMove(self.MIDDLE_START_DISTANCE, -1, False)
+            self.autoMove(self.MIDDLE_START_DISTANCE, self.robot.elevator.kSwitch, False)
         elif self.chunkStep == 1 and self.gamedata[0] == "R":
-            self.autoAngle(self.MIDDLE_TO_SWITCH_ANGLE, self.ANGLE_TOLERANCE, -1)
+            self.autoAngle(self.MIDDLE_TO_SWITCH_ANGLE, self.ANGLE_TOLERANCE, self.robot.elevator.kSwitch)
         elif self.chunkStep == 1 and self.gamedata[0] == "L":
-            self.autoAngle(-self.MIDDLE_TO_SWITCH_ANGLE, self.ANGLE_TOLERANCE, -1)
+            self.autoAngle(-self.MIDDLE_TO_SWITCH_ANGLE, self.ANGLE_TOLERANCE, self.robot.elevator.kSwitch)
         elif self.chunkStep == 2:
             self.autoMove(self.MIDDLE_START_TO_SWITCH, self.robot.elevator.kSwitch, False)
         elif self.chunkStep == 3:
             self.autoAngle(0, 2, self.robot.elevator.kSwitch)
+#         elif self.chunkStep == 4:
+#             self.autoMove(self.MIDDLE_TO_SWITCH, self.robot.elevator.kSwitch, False)
+
         elif self.chunkStep == 4:
-            self.autoMove(self.MIDDLE_TO_SWITCH, self.robot.elevator.kSwitch, False)
+            self.driveWithTime(1, self.robot.elevator.kSwitch)
         elif self.chunkStep == 5:
-            self.dropCube()
+            self.dropCube(self.robot.elevator.kSwitch)
         else:
             self.reset();
+            self.autoStep += 1
                          
     def driveForwardOnly(self):
         if self.chunkStep == 0:
             self.autoMove(self.WALL_TO_PLATFORM_ALLEY, -1, False)
         else:
             self.reset()
+            self.autoStep += 1
     
     def autoMove(self, distanceIN, elevatorPosition, isAutoPickUp):
-        elevatorPosition = -1
-        #wpilib.SmartDashboard.putNumber('Current Distance Target', self.magEncoderInchesToTicks(distanceIN))
+
+        wpilib.SmartDashboard.putNumber('Current Distance Target', self.magEncoderInchesToTicks(distanceIN))
         
         self.robot.drive.moveToPosition(self.magEncoderInchesToTicks(distanceIN))
         
@@ -331,17 +347,26 @@ class Autonomous(Subsystem):
         if abs(self.driveLeft.getSelectedSensorPosition(0)) >= abs(self.magEncoderInchesToTicks(distanceIN)) and abs(self.driveRight.getSelectedSensorPosition(0)) >= abs(self.magEncoderInchesToTicks(distanceIN)):
             if elevatorPosition < -1: 
                 
-                if self.elevator.getSelectedSensorPosition(0) <= elevatorPosition + 1000:
+                if self.elevator.getSelectedSensorPosition(0) <= elevatorPosition + 3000:
                     
                     self.reset()
                     self.chunkStep += 1
             else:   
                 self.reset()
                 self.chunkStep += 1
+                
+    def driveWithTime(self, time, elevatorPosition):
+        self.reset()
+        self.driveLeft.set(.5)
+        self.driveRight.set(.5)
+        self.robot.elevator.setElevatorPosition(elevatorPosition)
+        wpilib.Timer.delay(time)
+        self.reset()
+        self.chunkStep += 1
       
     def autoAngle(self, angle, tolerance, elevatorPosition):
-        elevatorPosition = -1
-        #wpilib.SmartDashboard.putNumber('Current Angle Target', angle)
+        
+        wpilib.SmartDashboard.putNumber('Current Angle Target', angle)
 
         
         self.robot.drive.setAngle(angle, tolerance) 
@@ -354,7 +379,7 @@ class Autonomous(Subsystem):
         if self.robot.drive.isInGyroPosition():
             
             if elevatorPosition < -1 : 
-                if self.elevator.getSelectedSensorPosition(0) <= elevatorPosition+1000:
+                if self.elevator.getSelectedSensorPosition(0) <= elevatorPosition+3000:
                     self.reset()
                     self.chunkStep += 1
             else:   
@@ -368,9 +393,11 @@ class Autonomous(Subsystem):
         if self.robot.cubeGrabber.getSwitch():
             self.chunkStep += 1
      
-    def dropCube(self):
+    def dropCube(self, elevatorPosition):
         self.reset()
         self.grabber.set(1)
+        
+        self.robot.elevator.setElevatorPosition(elevatorPosition)
         
         wpilib.Timer.delay(1)
         

@@ -8,7 +8,7 @@ class cubeGrabber(Subsystem):
         
         self.robot = robot
         
-        self.armMotor = Talon(self.robot.kCubeGrabber['left_arm'])
+        self.armMotor = Talon(self.robot.kCubeGrabber['right_arm'])
         
         self.armMotor.configPeakOutputForward(1, 0)
         self.armMotor.configPeakOutputReverse(-1, 0)
@@ -70,8 +70,8 @@ class cubeGrabber(Subsystem):
         """
         These send information over to the SmartDashboard
         """
-#         wpilib.SmartDashboard.putNumber("cubeGrabber Ultra Sonic", self.cubeDistanceIn)
-#         wpilib.SmartDashboard.putNumber("cubeGrabber Limit Switch", self.armSwitch.get())
+        wpilib.SmartDashboard.putNumber("cubeGrabber Ultra Sonic", self.cubeDistanceIn)
+        wpilib.SmartDashboard.putNumber("cubeGrabber Limit Switch", self.armSwitch.get())
         
     """
     Code for resetting the Cube cubeGrabber
@@ -109,7 +109,7 @@ class cubeGrabber(Subsystem):
             """This will prevent the arms from changing position when changing to Manual Mode."""
             self.openToggleCount = 2
         
-        elif self.armSwitch.get() == 0:
+        elif self.armSwitch.get() == 1:
             self.armMotor.set(0)
             
             self.armSolenoid.set(self.armClosePosition)
