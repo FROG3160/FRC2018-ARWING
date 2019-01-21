@@ -6,7 +6,8 @@ from wpilib.drive.differentialdrive import DifferentialDrive
 from wpilib.speedcontrollergroup import SpeedControllerGroup
 from wpilib.smartdashboard import SmartDashboard as SD
 from wpilib.command import Subsystem
-from robotpy_ext.common_drivers.navx import AHRS
+ #from robotpy_ext.common_drivers.navx import AHRS
+from navx import AHRS
 
 
 class DriveTrain(Subsystem):
