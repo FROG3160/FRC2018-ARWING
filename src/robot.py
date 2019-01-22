@@ -65,10 +65,12 @@ class Robot(wpilib.IterativeRobot):
         #self.elevator.setElevatorPosition(self.elevator.kScale)
        
         #self.autonomous.start()
-        self.autonomous.run()
+        #self.autonomous.run()
         #self.elevator.setElevatorPosition(-20000)
         
         #self.autonomous.telemetry()
+        
+        self.drive.setAngle()
         
     def teleopInit(self):
         self.drive.teleInit()
@@ -88,7 +90,7 @@ class Robot(wpilib.IterativeRobot):
           
         self.climber.climberFunction()
         
-
+        
 
     def testInit(self):
         pass

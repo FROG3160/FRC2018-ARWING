@@ -8,7 +8,7 @@ from wpilib.smartdashboard import SmartDashboard as SD
 from wpilib.command import Subsystem
  #from robotpy_ext.common_drivers.navx import AHRS
 from navx import AHRS
-
+from .vision_client import vision
 
 class DriveTrain(Subsystem):
     '''
@@ -21,7 +21,7 @@ class DriveTrain(Subsystem):
 
         self.robot = robot
         
-        self.ahrs = AHRS.create_spi()  
+        self.ahrs = AHRS.create_spi()   
         self.ahrs.reset()
         
 #         self.angleAdjustment = self.ahrs.getAngle()
@@ -69,6 +69,12 @@ class DriveTrain(Subsystem):
         self.driveLeftMaster.setInverted(False)
         self.driveRightSlave.setInverted(True)
         self.driveRightMaster.setInverted(True)
+        
+        # turn PID constants
+        self.kTurnP = .045
+        self.kTurnI = 0.00
+        self.kTurnD = 0.00
+        self.kTurnF = 0.00
         
         self.PID()
         
@@ -120,6 +126,17 @@ class DriveTrain(Subsystem):
         self.drive.setSafetyEnabled(False)
 
         self.previousError = 0
+        
+        
+        # constants for field of view for camera
+        self.camResH = 640
+        self.camResV = 480
+        self.fovRadH = 0.896376
+        self.fovRadV = 0.74858
+        self.RadpPixH = self.fovRadH / self.camResH
+        self.RadpPixV = self.fovRadV / self.camResV
+        self.fovCenterH = 160
+        self.fovCenterV = 120       
 
         super().__init__()
         
@@ -317,31 +334,34 @@ class DriveTrain(Subsystem):
         return 0.0
     
         
-    def setAngle(self, angle, tolerance):
-        #self.tolerance = tolerance
-        #self.calculateAdjustedSetpoint(angle)
-        self.turnController.setSetpoint(angle)
+    def setAngle(self):
         
-
+        angle = self.findHorizAngle()
         
-        if ((self.ahrs.getYaw() <= (angle + tolerance)) 
-            and (self.ahrs.getYaw() >= (angle - tolerance))):            
-            self.turnController.disable()
-
+        if angle:
             
-            self.driveLeftMaster.set(0)
-            self.driveRightMaster.set(0)
+            #self.tolerance = tolerance
+            #self.calculateAdjustedSetpoint(angle)
+            self.turnController.setSetpoint(angle)
             
-        else:
-            self.turnController.enable()
+            if ((self.ahrs.getYaw() <= (angle + tolerance)) 
+                and (self.ahrs.getYaw() >= (angle - tolerance))):            
+                self.turnController.disable()
+    
+                
+                self.driveLeftMaster.set(0)
+                self.driveRightMaster.set(0)
+                
+            else:
+                self.turnController.enable()
+                
+                self.drive.arcadeDrive(0, self.turnPIDOutput)
+    
+                
             
-            self.drive.arcadeDrive(0, self.output)
-
-            
-        
-            #self.leftTurnController.setSetpoint(angle)
-
-            
+                #self.leftTurnController.setSetpoint(angle)
+    
+                
     def isInGyroPosition(self):
         SD.putNumber('Is in gyro position', ((self.ahrs.getYaw() <= (self.turnController.getSetpoint() + self.robot.autonomous.ANGLE_TOLERANCE)) and (self.ahrs.getYaw() >= (self.turnController.getSetpoint() - self.robot.autonomous.ANGLE_TOLERANCE)))
 )
@@ -363,12 +383,8 @@ class DriveTrain(Subsystem):
                 
         
     def PID(self):
-        self.kP = .045
-        self.kI = 0.00
-        self.kD = 0.00
-        self.kF = 0.00
         
-        self.turnController = wpilib.PIDController(self.kP, self.kI, self.kD, self.kF, self.ahrs, output=self)
+        self.turnController = wpilib.PIDController(self.kTurnP, self.kTurnI, self.kTurnD, self.kTurnF, self.ahrs, output=self)
         
                 
         self.turnController.setInputRange(-180, 180)
@@ -380,5 +396,18 @@ class DriveTrain(Subsystem):
         
         
     def pidWrite(self, output):
-        self.output = output       
+        
+        self.turnPIDOutput = output       
                 
+    
+    def findHorizAngle(self):
+        
+        if vision.targetCenter_x == None:
+           
+            return None
+        
+        else:
+        
+            return (self.RadpPixH) * (vision.targetCenter_x[0] - self.fovCenterH) * (180/math.pi)
+    
+    
